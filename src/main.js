@@ -1,9 +1,11 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import App from './App.vue'
-import router from './router'
 
 const app = createApp(App)
 
-app.use(router)
+// Pinia deve ser registrado antes do mount para que os stores
+// estejam disponíveis desde o primeiro ciclo de vida dos componentes
+app.use(createPinia())
 
 app.mount('#app')

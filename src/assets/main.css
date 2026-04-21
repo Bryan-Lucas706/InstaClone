@@ -1,0 +1,148 @@
+/* ============================================================
+   INSTACLONE — CSS GLOBAL
+   Variáveis de tema inspiradas no Instagram + reset minimalista
+   ============================================================ */
+
+/* --- Variáveis de design --- */
+:root {
+  /* Gradiente característico do Instagram (usado no logo e destaques) */
+  --color-gradient-start: #833ab4;
+  --color-gradient-mid:   #fd1d1d;
+  --color-gradient-end:   #f77737;
+
+  /* Cor primária para botões e links de ação */
+  --color-primary:        #0095f6;
+  --color-primary-hover:  #1aa3f5;
+
+  /* Superfícies e fundos */
+  --color-bg:             #fafafa;
+  --color-surface:        #ffffff;
+
+  /* Tipografia */
+  --color-text:           #262626;
+  --color-text-muted:     #8e8e8e;
+
+  /* Bordas e separadores */
+  --color-border:         #dbdbdb;
+
+  /* Raios de borda padronizados */
+  --radius-sm:            4px;
+  --radius-md:            8px;
+  --radius-full:          9999px;
+
+  /* Sombras */
+  --shadow-card:          0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-modal:         0 4px 24px rgba(0, 0, 0, 0.18);
+
+  /* Transições padrão */
+  --transition-fast:      150ms ease;
+  --transition-normal:    200ms ease;
+
+  /* Alturas fixas de layout */
+  --navbar-height:        60px;
+  --header-height:        54px;
+}
+
+/* --- Reset minimalista ---
+   Garante comportamento previsível cross-browser sem depender
+   de frameworks CSS externos (conforme restrição do projeto) */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Evita zoom indesejado em inputs no iOS */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  /* Evita scroll horizontal acidental */
+  overflow-x: hidden;
+}
+
+/* --- Elementos base --- */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+input,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  outline: none;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* --- Utilitários globais --- */
+
+/* Esconde visualmente mas mantém acessível para leitores de tela.
+   Usado em ícones SVG sem label e em inputs de arquivo ocultos. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Gradiente de texto estilo Instagram — usado no logo "InstaClone" */
+.gradient-text {
+  background: linear-gradient(
+    45deg,
+    var(--color-gradient-start),
+    var(--color-gradient-mid),
+    var(--color-gradient-end)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Truncar texto em uma linha */
+.text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Container centralizado para desktop */
+.container {
+  width: 100%;
+  max-width: 935px;
+  margin: 0 auto;
+  padding: 0 16px;
+}

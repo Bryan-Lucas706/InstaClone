@@ -1,11 +1,12 @@
-<script setup></script>
+<script setup>
+// Shell temporário — RouterView será adicionado no Módulo 2
+// quando o Vue Router estiver registrado no main.js
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div>InstaClone carregando...</div>
 </template>
 
-<style scoped></style>
+<style>
+@import '@/assets/main.css';
+</style>
