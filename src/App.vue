@@ -1,6 +1,7 @@
 <script setup>
-// Shell temporário — RouterView será adicionado no Módulo 2
-// quando o Vue Router estiver registrado no main.js
+// Shell temporário — RouterView e authStore.init()
+// serão adicionados no Módulo 2 junto com o Router.
+
 </script>
 
 <template>
@@ -8,5 +9,5 @@
 </template>
 
 <style>
-@import '@/assets/main.css';
+@import '@/assets/styles/theme.css';
 </style>
