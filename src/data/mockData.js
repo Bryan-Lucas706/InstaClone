@@ -80,7 +80,7 @@ export const MOCK_POSTS = [
     location: 'Lisboa, Portugal',
     likesCount: 847,
     // likedBy guarda IDs dos usuários que curtiram — usado pelo toggleLike
-    likedBy: ['user_001', 'user_003'],
+    likedBy: [],
     createdAt: new Date(Date.now() - 1000 * 60 * 18).toISOString(), // 18 min atrás
     comments: [
       {
