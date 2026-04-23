@@ -23,7 +23,6 @@ onMounted(async () => {
 </template>
 
 <style>
-@import '@/assets/styles/theme.css';
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity var(--transition-normal);
