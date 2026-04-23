@@ -1,101 +1,110 @@
-import { createRouter, createWebHistory } from "vue-router";
-
-const routes = [
-  // ── ROTAS PÚBLICAS ──────────────────────────
-  {
-    path: "/login",
-    name: "login",
-    component: () => import("@/views/LoginView.vue"),
-    meta: { public: true },
-  },
-  {
-    path: "/register",
-    name: "register",
-    component: () => import("@/views/RegisterView.vue"),
-    meta: { public: true },
-  },
-
-  // ── ROTAS PROTEGIDAS ────────────────────────
-  {
-    path: "/feed",
-    name: "feed",
-    component: () => import("@/views/FeedView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/create",
-    name: "create",
-    component: () => import("@/views/CreatePostView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/post/:id",
-    name: "post",
-    component: () => import("@/views/PostDetailView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/profile/edit",
-    name: "profile-edit",
-    component: () => import("@/views/EditProfileView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/profile/:username",
-    name: "profile",
-    component: () => import("@/views/ProfileView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/profile/:username/followers",
-    name: "followers",
-    component: () => import("@/views/FollowersView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/profile/:username/following",
-    name: "following",
-    component: () => import("@/views/FollowingView.vue"),
-    meta: { requiresAuth: true },
-  },
-
-  // ── ROTA RAIZ ───────────────────────────────
-  {
-    path: "/",
-    redirect: "/feed",
-  },
-
-  // ── ROTA 404 ────────────────────────────────
-  {
-    path: "/:pathMatch(.*)*",
-    redirect: "/feed",
-  },
-];
+import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
 
 const router = createRouter({
-  history: createWebHistory(),
-  routes,
-  scrollBehavior() {
-    return { top: 0 };
-  },
-});
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    // ─── Rota raiz ───────────────────────────────────────────
+    {
+      path: '/',
+      redirect: '/feed',
+    },
 
+    // ─── Rotas públicas (requiresGuest) ──────────────────────
+    {
+      path: '/login',
+      component: () => import('@/layouts/AuthLayout.vue'),
+      meta: { requiresGuest: true },
+      children: [
+        {
+          path: '',
+          name: 'login',
+          component: () => import('@/views/auth/LoginView.vue'),
+        },
+      ],
+    },
+    {
+      path: '/cadastro',
+      component: () => import('@/layouts/AuthLayout.vue'),
+      meta: { requiresGuest: true },
+      children: [
+        {
+          path: '',
+          name: 'cadastro',
+          component: () => import('@/views/auth/CadastroView.vue'),
+        },
+      ],
+    },
+
+    // ─── Rotas protegidas (requiresAuth) ─────────────────────
+    {
+      path: '/',
+      component: () => import('@/layouts/AppLayout.vue'),
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'feed',
+          name: 'feed',
+          component: () => import('@/views/FeedView.vue'),
+        },
+        {
+          path: 'descobrir',
+          name: 'descobrir',
+          component: () => import('@/views/DescubrirView.vue'),
+        },
+        {
+          path: 'criar',
+          name: 'criar',
+          component: () => import('@/views/CriarPostView.vue'),
+        },
+        {
+          path: 'perfil',
+          name: 'perfil',
+          component: () => import('@/views/PerfilView.vue'),
+        },
+        {
+          path: 'perfil/editar',
+          name: 'perfil-editar',
+          component: () => import('@/views/EditarPerfilView.vue'),
+        },
+        {
+          path: 'perfil/lista/:type',
+          name: 'perfil-lista',
+          component: () => import('@/views/ListaConexoesView.vue'),
+        },
+        {
+          path: 'posts/:postId',
+          name: 'post-detail',
+          component: () => import('@/views/PostDetailView.vue'),
+        },
+      ],
+    },
+
+    // ─── 404 ─────────────────────────────────────────────────
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
+    },
+  ],
+})
+
+// --- Navigation Guard ---
 router.beforeEach((to, _from, next) => {
-  const token = localStorage.getItem("token");
-  const requiresAuth = to.meta.requiresAuth;
-  const isPublic = to.meta.public;
+  const authStore = useAuthStore()
 
-  if (requiresAuth && !token) {
-    next({ name: "login" });
-    return;
+  const requiresAuth = to.matched.some((r) => r.meta.requiresAuth)
+  const requiresGuest = to.matched.some((r) => r.meta.requiresGuest)
+
+  if (requiresAuth && !authStore.isAuthenticated) {
+    return next('/login')
   }
 
-  if (isPublic && token) {
-    next({ name: "feed" });
-    return;
+  if (requiresGuest && authStore.isAuthenticated) {
+    return next('/feed')
   }
 
-  next();
-});
+  next()
+})
 
-export default router;
+export default router
