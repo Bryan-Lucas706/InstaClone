@@ -39,6 +39,8 @@ export const useFeedStore = defineStore("feed", () => {
   // inserindo cada um no dicionário postsById.
   function _normalizePosts(posts) {
     posts.forEach((post) => {
+      // Normaliza campo do backend (isLiked ) para o padrão interno (isLiked)
+      post.isLiked = post.liked_by_me;
       postsById.value[post.id] = post;
     });
   }
@@ -57,8 +59,8 @@ export const useFeedStore = defineStore("feed", () => {
       postsById.value = {};
       feedOrder.value = [];
 
-      _normalizePosts(data.posts);
-      feedOrder.value = data.posts.map((p) => p.id);
+      _normalizePosts(data.data);
+      feedOrder.value = data.data.map((p) => p.id);
       nextCursor.value = data.next_cursor ?? null;
     } catch (error) {
       throw new Error(
@@ -83,9 +85,9 @@ export const useFeedStore = defineStore("feed", () => {
         params: { cursor: nextCursor.value },
       });
 
-      _normalizePosts(data.posts);
       // Acumula ids no final da ordem existente
-      feedOrder.value.push(...data.posts.map((p) => p.id));
+      _normalizePosts(data.data);
+      feedOrder.value.push(...data.data.map((p) => p.id));
       nextCursor.value = data.next_cursor ?? null;
     } catch (error) {
       throw new Error(
@@ -108,11 +110,11 @@ export const useFeedStore = defineStore("feed", () => {
 
     // Salva estado anterior para reverter em caso de erro
     const wasLiked = post.isLiked;
-    const previousCount = post.likesCount;
+    const previousCount = post.likes_count;
 
     // Atualização otimista imediata
     post.isLiked = !wasLiked;
-    post.likesCount = wasLiked ? previousCount - 1 : previousCount + 1;
+    post.likes_count = wasLiked ? previousCount - 1 : previousCount + 1;
 
     try {
       if (!wasLiked) {
@@ -123,7 +125,7 @@ export const useFeedStore = defineStore("feed", () => {
     } catch (error) {
       // Reverte o estado otimista em caso de falha
       post.isLiked = wasLiked;
-      post.likesCount = previousCount;
+      post.likes_count = previousCount;
       throw new Error(
         error.response?.data?.message ?? "Erro ao processar curtida.",
       );

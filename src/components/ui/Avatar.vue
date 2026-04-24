@@ -19,7 +19,7 @@ const props = defineProps({
 })
 
 // Mapeia o nome do tamanho para pixels
-const sizeMap = { sm: '32px', md: '44px', lg: '80px' }
+const sizeMap = { sm: '28px', md: '44px', lg: '80px' }
 const dimension = computed(() => sizeMap[props.size])
 
 // Controla se a imagem falhou ao carregar

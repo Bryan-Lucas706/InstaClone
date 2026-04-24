@@ -1,0 +1,346 @@
+<script setup>
+import { ref, computed } from "vue";
+import { useFeedStore } from "@/stores/feed.js";
+import { timeAgo } from "@/utils/date.js";
+import { formatCount } from "@/utils/format.js";
+import Avatar from "@/components/ui/Avatar.vue";
+
+const props = defineProps({
+  post: {
+    type: Object,
+    required: true,
+  },
+});
+
+const feedStore = useFeedStore();
+
+// ── Legenda truncada ──────────────────────────────────────
+const CAPTION_LIMIT = 120;
+const captionExpanded = ref(false);
+
+const captionText = computed(() => {
+  if (!props.post.caption) return "";
+  if (captionExpanded.value || props.post.caption.length <= CAPTION_LIMIT) {
+    return props.post.caption;
+  }
+  return props.post.caption.slice(0, CAPTION_LIMIT) + "...";
+});
+
+const showCaptionToggle = computed(
+  () => props.post.caption?.length > CAPTION_LIMIT,
+);
+
+// ── Curtida ───────────────────────────────────────────────
+async function handleLike() {
+  try {
+    await feedStore.toggleLike(props.post.id);
+  } catch {
+    // Erro já revertido no store — não precisa tratar aqui
+  }
+}
+
+// ── Comentário inline ─────────────────────────────────────
+const commentText = ref("");
+
+async function handleComment() {
+  const text = commentText.value.trim();
+  if (!text) return;
+  try {
+    await feedStore.addComment(props.post.id, text);
+    commentText.value = "";
+  } catch {
+    // Campo permanece preenchido para reenvio
+  }
+}
+</script>
+
+<template>
+  <article class="post-card">
+    <!-- Header: avatar + username -->
+    <header class="post-card__header">
+      <Avatar
+        :src="post.user?.avatar_url"
+        :alt="post.user?.username ?? 'usuário'"
+        size="md"
+      />
+      <RouterLink
+        :to="`/perfil?user=${post.user?.username}`"
+        class="post-card__username"
+      >
+        {{ post.user?.username }}
+      </RouterLink>
+    </header>
+
+    <!-- Imagem do post -->
+    <img
+      :src="post.image_url"
+      :alt="`Post de ${post.user?.username}`"
+      class="post-card__image"
+      loading="lazy"
+    />
+
+    <!-- Actions: curtir -->
+    <div class="post-card__actions">
+      <button
+        class="post-card__like-btn"
+        :aria-label="post.isLiked ? 'Descurtir post' : 'Curtir post'"
+        @click="handleLike"
+      >
+        <!-- Coração preenchido (curtido) -->
+        <svg
+          v-if="post.isLiked"
+          viewBox="0 0 24 24"
+          fill="#ed4956"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+            2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09
+            C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5
+            c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+          />
+        </svg>
+        <!-- Coração vazio (não curtido) -->
+        <svg
+          v-else
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+            2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09
+            C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5
+            c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+          />
+        </svg>
+      </button>
+
+      <span class="post-card__likes-count">
+        {{ formatCount(post.likes_count ?? 0) }} curtidas
+      </span>
+    </div>
+
+    <!-- Legenda -->
+    <p v-if="post.caption" class="post-card__caption">
+      <strong>{{ post.user?.username }}</strong>
+      {{ captionText }}
+      <button
+        v-if="showCaptionToggle"
+        class="post-card__caption-toggle"
+        @click="captionExpanded = !captionExpanded"
+      >
+        {{ captionExpanded ? " menos" : " mais" }}
+      </button>
+    </p>
+
+    <!-- Link para comentários -->
+    <RouterLink
+      v-if="post.comments_count"
+      :to="`/posts/${post.id}`"
+      class="post-card__comments-link"
+    >
+      Ver todos os
+      {{ formatCount(post.comments_count ?? post.commentsCount) }} comentários
+    </RouterLink>
+
+    <!-- Input inline de comentário -->
+    <div class="post-card__comment-form">
+      <input
+        v-model="commentText"
+        type="text"
+        class="post-card__comment-input"
+        placeholder="Adicione um comentário..."
+        :aria-label="`Comentar no post de ${post.user?.username}`"
+        @keydown.enter.prevent="handleComment"
+      />
+      <button
+        class="post-card__comment-submit"
+        :disabled="!commentText.trim()"
+        @click="handleComment"
+      >
+        Publicar
+      </button>
+    </div>
+
+    <!-- Data -->
+    <time class="post-card__date">
+      {{ timeAgo(post.created_at) }}
+    </time>
+  </article>
+</template>
+
+<style scoped>
+.post-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.post-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+}
+
+.post-card__username {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.post-card__username:hover {
+  text-decoration: underline;
+}
+
+/* ── Imagem ── */
+.post-card__image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Actions ── */
+.post-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 4px;
+}
+
+.post-card__like-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: transform var(--transition-fast);
+}
+
+.post-card__like-btn:active {
+  transform: scale(1.3);
+}
+
+.post-card__like-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.post-card__likes-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ── Legenda ── */
+.post-card__caption {
+  padding: 4px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.post-card__caption strong {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.post-card__caption-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+/* ── Comentários ── */
+.post-card__comments-link {
+  display: block;
+  padding: 2px 16px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.post-card__comments-link:hover {
+  color: var(--color-text);
+}
+
+/* ── Input de comentário inline ── */
+.post-card__comment-form {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-top: 1px solid var(--color-border);
+  gap: 8px;
+}
+
+.post-card__comment-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+  color: var(--color-text);
+}
+
+.post-card__comment-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.post-card__comment-submit {
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+}
+
+.post-card__comment-submit:not(:disabled) {
+  opacity: 1;
+}
+
+/* ── Data ── */
+.post-card__date {
+  display: block;
+  padding: 4px 16px 12px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Skeleton ── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-border) 25%,
+    #f0f0f0 50%,
+    var(--color-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>
