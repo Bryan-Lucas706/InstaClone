@@ -69,6 +69,8 @@ async function handleComment() {
       >
         {{ post.user?.username }}
       </RouterLink>
+      <!-- Data -->
+      <time class="post-card__date"> • {{ timeAgo(post.created_at) }} </time>
     </header>
 
     <!-- Imagem do post -->
@@ -87,40 +89,27 @@ async function handleComment() {
         @click="handleLike"
       >
         <!-- Coração preenchido (curtido) -->
-        <svg
+        <i
           v-if="post.isLiked"
-          viewBox="0 0 24 24"
-          fill="#ed4956"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
-            2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09
-            C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5
-            c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-          />
-        </svg>
+          class="fa-solid fa-heart"
+          style="color: #eb3443"
+        ></i>
         <!-- Coração vazio (não curtido) -->
-        <svg
-          v-else
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
-            2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09
-            C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5
-            c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-          />
-        </svg>
+        <i v-else class="fa-regular fa-heart"></i>
       </button>
 
       <span class="post-card__likes-count">
-        {{ formatCount(post.likes_count ?? 0) }} curtidas
+        {{ formatCount(post.likes_count ?? 0) }}
       </span>
+
+      <!-- Link para comentários -->
+      <RouterLink
+        :to="`/posts/${post.id}`"
+        class="post-card__comments-link"
+      >
+        <i class="fa-regular fa-comment"></i>
+        {{ formatCount(post.comments_count) }}
+      </RouterLink>
     </div>
 
     <!-- Legenda -->
@@ -135,16 +124,6 @@ async function handleComment() {
         {{ captionExpanded ? " menos" : " mais" }}
       </button>
     </p>
-
-    <!-- Link para comentários -->
-    <RouterLink
-      v-if="post.comments_count"
-      :to="`/posts/${post.id}`"
-      class="post-card__comments-link"
-    >
-      Ver todos os
-      {{ formatCount(post.comments_count ?? post.commentsCount) }} comentários
-    </RouterLink>
 
     <!-- Input inline de comentário -->
     <div class="post-card__comment-form">
@@ -164,11 +143,6 @@ async function handleComment() {
         Publicar
       </button>
     </div>
-
-    <!-- Data -->
-    <time class="post-card__date">
-      {{ timeAgo(post.created_at) }}
-    </time>
   </article>
 </template>
 
@@ -177,7 +151,7 @@ async function handleComment() {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  margin-bottom: 16px;
+  margin-bottom: 24px;
   overflow: hidden;
 }
 
@@ -190,13 +164,18 @@ async function handleComment() {
 }
 
 .post-card__username {
-  font-size: 14px;
   font-weight: 600;
-  color: var(--color-text);
 }
 
 .post-card__username:hover {
   text-decoration: underline;
+}
+
+/* ── Data ── */
+.post-card__date {
+  display: block;
+  font-size: 0.9em;
+  color: var(--color-text-muted);
 }
 
 /* ── Imagem ── */
@@ -211,8 +190,12 @@ async function handleComment() {
 .post-card__actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 5px;
   padding: 10px 16px 4px;
+
+  & i {
+    font-size: 1.5em;
+  }
 }
 
 .post-card__like-btn {
@@ -225,18 +208,25 @@ async function handleComment() {
   transition: transform var(--transition-fast);
 }
 
-.post-card__like-btn:active {
-  transform: scale(1.3);
-}
-
-.post-card__like-btn svg {
-  width: 24px;
-  height: 24px;
+.post-card__like-btn:hover {
+  transform: scale(1.1);
 }
 
 .post-card__likes-count {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ── Comentários ── */
+.post-card__comments-link {
+  display: block;
+  padding: 2px 16px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.post-card__comments-link:hover {
   color: var(--color-text);
 }
 
@@ -260,18 +250,6 @@ async function handleComment() {
   font-size: 14px;
   color: var(--color-text-muted);
   cursor: pointer;
-}
-
-/* ── Comentários ── */
-.post-card__comments-link {
-  display: block;
-  padding: 2px 16px;
-  font-size: 14px;
-  color: var(--color-text-muted);
-}
-
-.post-card__comments-link:hover {
-  color: var(--color-text);
 }
 
 /* ── Input de comentário inline ── */
@@ -310,16 +288,6 @@ async function handleComment() {
 
 .post-card__comment-submit:not(:disabled) {
   opacity: 1;
-}
-
-/* ── Data ── */
-.post-card__date {
-  display: block;
-  padding: 4px 16px 12px;
-  font-size: 11px;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 /* ── Skeleton ── */

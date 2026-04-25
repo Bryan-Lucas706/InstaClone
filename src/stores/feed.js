@@ -135,12 +135,12 @@ export const useFeedStore = defineStore("feed", () => {
   // Insere o comentário retornado pela API diretamente no post
   async function addComment(postId, text) {
     try {
-      const { data } = await api.post(`/posts/${postId}/comments`, { text });
+      const { data } = await api.post(`/posts/${postId}/comments`, { body: text });
       const post = postsById.value[postId];
       if (post) {
         if (!Array.isArray(post.comments)) post.comments = [];
         post.comments.push(data);
-        post.commentsCount = (post.commentsCount ?? 0) + 1;
+        post.comments_count = (post.comments_count ?? 0) + 1;
       }
       return data;
     } catch (error) {
