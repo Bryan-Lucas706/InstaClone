@@ -103,10 +103,7 @@ async function handleComment() {
       </span>
 
       <!-- Link para comentários -->
-      <RouterLink
-        :to="`/posts/${post.id}`"
-        class="post-card__comments-link"
-      >
+      <RouterLink :to="`/posts/${post.id}`" class="post-card__comments-link">
         <i class="fa-regular fa-comment"></i>
         {{ formatCount(post.comments_count) }}
       </RouterLink>
@@ -147,10 +144,15 @@ async function handleComment() {
 </template>
 
 <style scoped>
+@media (min-width: 480px) {
+  .post-card {
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+}
+
 .post-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
   margin-bottom: 24px;
   overflow: hidden;
 }
@@ -181,7 +183,6 @@ async function handleComment() {
 /* ── Imagem ── */
 .post-card__image {
   width: 100%;
-  aspect-ratio: 1 / 1;
   object-fit: cover;
   display: block;
 }

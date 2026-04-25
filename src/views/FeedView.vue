@@ -87,9 +87,9 @@ async function loadMore() {
 
 <style scoped>
 .feed {
-  max-width: 580px;
+  max-width: 480px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding-top: 24px;
 }
 
 .feed__empty {
