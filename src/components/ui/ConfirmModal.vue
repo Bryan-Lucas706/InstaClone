@@ -24,7 +24,7 @@ const emit = defineEmits(['confirm', 'cancel'])
 <template>
   <!-- Overlay fullscreen que bloqueia interação com o fundo -->
   <div class="modal-overlay" @click.self="emit('cancel')">
-    <div class="modal" role="dialog" :aria-label="title">
+    <div class="confirm-modal" role="dialog" :aria-label="title">
       <h3 class="modal__title">{{ title }}</h3>
       <p class="modal__message">{{ message }}</p>
       <div class="modal__actions">
@@ -57,7 +57,7 @@ const emit = defineEmits(['confirm', 'cancel'])
   padding: 16px;
 }
 
-.modal {
+.confirm-modal {
   background: var(--color-surface);
   border-radius: var(--radius-md);
   padding: 24px;

@@ -106,7 +106,7 @@ async function handleSubmit() {
       bio: bio.value,
     })
     authStore.updateProfile(data)
-    router.replace('/perfil')
+    router.replace('/profile')
   } catch (error) {
     const apiErrors = error.response?.data?.errors
     if (apiErrors) {
