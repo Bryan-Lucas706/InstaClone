@@ -65,12 +65,12 @@ const router = createRouter({
         {
           path: "profile/edit",
           name: "profile-edit",
-          component: () => import("@/views/EditprofileView.vue"),
+          component: () => import("@/views/EditProfileView.vue"),
         },
         {
           path: "profile/list/:type",
           name: "profile-list",
-          component: () => import("@/views/ListaConexoesView.vue"),
+          component: () => import("@/views/ConnectionListView.vue"),
         },
         {
           path: "posts/:postId",

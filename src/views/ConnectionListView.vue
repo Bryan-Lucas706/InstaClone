@@ -1,11 +1,12 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth.js";
 import api from "@/services/api.js";
 import Avatar from "@/components/ui/Avatar.vue";
 import Spinner from "@/components/ui/Spinner.vue";
 
+const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -15,70 +16,78 @@ const isLoading = ref(false);
 const isLoadingMore = ref(false);
 const currentPage = ref(1);
 const hasMore = ref(false);
-const errorMessage = ref("");
-const searchQuery = ref("");
-
-// Guarda o estado de loading individual por usuário
-// para o botão de seguir mostrar spinner separado por card
 const loadingFollow = ref({});
 
-/**
- * fetchUsers() — busca usuários sugeridos via GET /users/search.
- * O Swagger não tem rota /users/suggestions, então usamos
- * /users/search sem query para listar todos os usuários.
- * Reseta a lista se for página 1.
- */
-async function fetchUsers(page) {
-  if (searchQuery.value.length === 1) return;
-  if (page === 1) {
-    isLoading.value = true;
-  } else {
-    isLoadingMore.value = true;
+// ── Tipo da lista: seguidores ou seguindo ─────────────────
+const type = computed(() => route.params.type);
+
+const title = computed(() =>
+  type.value === "followers" ? "Followers" : "Following",
+);
+
+// Username do perfil sendo visualizado
+const targetUsername = computed(
+  () => route.query.user ?? authStore.user?.username,
+);
+
+// Redireciona se type for inválido
+if (!["followers", "following"].includes(route.params.type)) {
+  router.replace("/profile");
+}
+
+onMounted(async () => {
+  // Busca o id do usuário alvo pelo username
+  try {
+    const { data } = await api.get(`/users/${targetUsername.value}`);
+    await fetchList(data.id, 1);
+  } catch {
+    router.replace("/profile");
   }
-  errorMessage.value = "";
+});
+
+let targetUserId = null;
+
+async function fetchList(userId, page) {
+  targetUserId = userId;
+  if (page === 1) isLoading.value = true;
+  else isLoadingMore.value = true;
 
   try {
-    const { data } = await api.get("/users/search", {
-      params: { q: searchQuery.value || "...", per_page: 10, page },
-    });
+    const endpoint =
+      type.value === "followers"
+        ? `/users/${userId}/followers`
+        : `/users/${userId}/following`;
 
-    const filtered = data.data.filter((u) => u.id !== authStore.user?.id);
+    const { data } = await api.get(endpoint, { params: { page } });
 
-    // Busca estado de seguir para cada usuário em paralelo
+    // Busca estado de seguir para cada usuário
     const withFollowState = await Promise.all(
-      filtered.map(async (u) => {
-        try {
-          const res = await api.get(`/users/${u.id}/is-following`);
-          return { ...u, isFollowing: res.data.is_following };
-        } catch {
-          return { ...u, isFollowing: false };
-        }
-      }),
+      data.data
+        .filter((u) => u.id !== authStore.user?.id)
+        .map(async (u) => {
+          try {
+            const res = await api.get(`/users/${u.id}/is-following`);
+            return { ...u, isFollowing: res.data.is_following };
+          } catch {
+            return { ...u, isFollowing: false };
+          }
+        }),
     );
 
-    if (page === 1) {
-      users.value = withFollowState;
-    } else {
-      users.value.push(...withFollowState);
-    }
+    if (page === 1) users.value = withFollowState;
+    else users.value.push(...withFollowState);
 
     currentPage.value = page;
-    // next_page_url indica se há mais páginas
     hasMore.value = !!data.next_page_url;
-  } catch {
-    errorMessage.value = "Erro ao carregar usuários.";
   } finally {
     isLoading.value = false;
     isLoadingMore.value = false;
   }
 }
 
-// Atualização otimista: muda o estado antes da resposta da API.
 async function toggleFollow(user) {
   loadingFollow.value[user.id] = true;
-
   const wasFollowing = user.isFollowing;
-  // Atualização otimista
   user.isFollowing = !wasFollowing;
 
   try {
@@ -88,36 +97,45 @@ async function toggleFollow(user) {
       await api.post(`/users/${user.id}/follow`);
     }
   } catch {
-    // Reverte em caso de erro
     user.isFollowing = wasFollowing;
   } finally {
     loadingFollow.value[user.id] = false;
   }
 }
 
-function goToProfile(user) {
-  if (user.username === authStore.user?.username) {
-    router.push("/profile");
-  } else {
-    router.push(`/profile?user=${user.username}`);
-  }
+function goBack() {
+  const query = route.query.user ? `?user=${route.query.user}` : "";
+  router.push(`/profile${query}`);
 }
 </script>
 
 <template>
   <div class="container py-4" style="max-width: 614px">
-    <h1 class="fw-semibold mb-4" style="font-size: 1.2em">Descobrir pessoas</h1>
-    <input
-      v-model="searchQuery"
-      type="text"
-      class="form-control mb-3"
-      placeholder="Buscar pessoas..."
-      @input="fetchUsers(1)"
-    />
-    <!-- Skeleton loader -->
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <button
+        class="btn btn-link p-0"
+        style="color: var(--color-text)"
+        aria-label="Voltar"
+        @click="goBack"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          style="width: 24px; height: 24px"
+        >
+          <path d="M19 12H5M12 5l-7 7 7 7" />
+        </svg>
+      </button>
+      <h1 class="mb-0 fw-semibold" style="font-size: 16px">{{ title }}</h1>
+    </div>
+
+    <!-- Skeleton -->
     <template v-if="isLoading">
       <div
-        v-for="n in users"
+        v-for="n in 5"
         :key="n"
         class="d-flex align-items-center gap-3 p-3 mb-2 rounded"
         style="
@@ -126,38 +144,28 @@ function goToProfile(user) {
         "
       >
         <div
-          class="rounded-circle flex-shrink-0"
+          class="rounded-circle"
           style="
             width: 44px;
             height: 44px;
             background: var(--color-border);
-            animation: shimmer 1.2s infinite;
+            flex-shrink: 0;
           "
         />
-        <div class="flex-grow-1 d-flex flex-column gap-2">
+        <div class="d-flex flex-column gap-2 flex-grow-1">
           <div
             class="rounded"
-            style="
-              height: 12px;
-              width: 40%;
-              background: var(--color-border);
-              animation: shimmer 1.2s infinite;
-            "
+            style="height: 12px; width: 40%; background: var(--color-border)"
           />
           <div
             class="rounded"
-            style="
-              height: 12px;
-              width: 25%;
-              background: var(--color-border);
-              animation: shimmer 1.2s infinite;
-            "
+            style="height: 12px; width: 25%; background: var(--color-border)"
           />
         </div>
       </div>
     </template>
 
-    <!-- Lista de usuários -->
+    <!-- Lista -->
     <template v-else-if="users.length > 0">
       <div
         v-for="user in users"
@@ -166,13 +174,15 @@ function goToProfile(user) {
         style="
           background: var(--color-surface);
           border: 1px solid var(--color-border);
-          cursor: pointer;
         "
       >
-        <!-- Avatar + info — clicável para o perfil -->
-        <div
+        <RouterLink
+          :to="
+            user.username === authStore.user?.username
+              ? '/profile'
+              : `/profile?user=${user.username}`
+          "
           class="d-flex align-items-center gap-3 flex-grow-1 overflow-hidden"
-          @click="goToProfile(user)"
         >
           <Avatar :src="user.avatar_url" :alt="user.username" size="md" />
           <div class="overflow-hidden">
@@ -186,10 +196,11 @@ function goToProfile(user) {
               {{ user.name }}
             </p>
           </div>
-        </div>
+        </RouterLink>
 
-        <!-- Botão seguir/seguindo -->
+        <!-- Botão seguir — oculto para o próprio usuário -->
         <button
+          v-if="user.id !== authStore.user?.id"
           class="btn btn-sm flex-shrink-0"
           :style="
             user.isFollowing
@@ -197,7 +208,7 @@ function goToProfile(user) {
               : 'background: var(--color-primary); color: #fff; min-width: 90px;'
           "
           :disabled="loadingFollow[user.id]"
-          @click.stop="toggleFollow(user)"
+          @click="toggleFollow(user)"
         >
           <Spinner v-if="loadingFollow[user.id]" size="sm" />
           <span v-else>{{ user.isFollowing ? "Seguindo" : "Seguir" }}</span>
@@ -210,7 +221,7 @@ function goToProfile(user) {
           class="btn"
           style="color: var(--color-primary); font-weight: 600"
           :disabled="isLoadingMore"
-          @click="fetchUsers(currentPage + 1)"
+          @click="fetchList(targetUserId, currentPage + 1)"
         >
           <Spinner v-if="isLoadingMore" size="sm" class="me-2" />
           {{ isLoadingMore ? "Carregando..." : "Carregar mais" }}
@@ -218,28 +229,15 @@ function goToProfile(user) {
       </div>
     </template>
 
-    <!-- Erro -->
-    <div v-else-if="errorMessage" class="alert alert-danger">
-      {{ errorMessage }}
-    </div>
-
     <!-- Vazio -->
     <div v-else class="text-center py-5" style="color: var(--color-text-muted)">
-      <p class="mb-0">Nenhum usuário encontrado.</p>
+      <p class="mb-0">
+        {{
+          type === "followers"
+            ? "Nenhum seguidor ainda."
+            : "Não está seguindo ninguém."
+        }}
+      </p>
     </div>
   </div>
 </template>
-
-<style scoped>
-@keyframes shimmer {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-</style>

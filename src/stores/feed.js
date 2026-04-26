@@ -120,7 +120,7 @@ export const useFeedStore = defineStore("feed", () => {
       if (!wasLiked) {
         await api.post(`/posts/${postId}/like`);
       } else {
-        await api.delete(`/posts/${postId}/unlike`);
+        await api.delete(`/posts/${postId}/like`);
       }
     } catch (error) {
       // Reverte o estado otimista em caso de falha
