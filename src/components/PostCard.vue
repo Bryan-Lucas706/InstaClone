@@ -64,7 +64,7 @@ async function handleComment() {
         size="md"
       />
       <RouterLink
-        :to="`/perfil?user=${post.user?.username}`"
+        :to="`/profile?user=${post.user?.username}`"
         class="post-card__username"
       >
         {{ post.user?.username }}
