@@ -92,7 +92,7 @@ async function handleLogin() {
     <hr class="my-4" />
     <p class="text-center mb-0">
       Não tem uma conta?
-      <RouterLink to="/cadastro" class="fw-semibold"> Cadastre-se </RouterLink>
+      <RouterLink to="/register" class="fw-semibold"> Cadastre-se </RouterLink>
     </p>
   </div>
 </template>

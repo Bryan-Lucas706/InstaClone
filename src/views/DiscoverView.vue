@@ -97,9 +97,9 @@ async function toggleFollow(user) {
 
 function goToProfile(user) {
   if (user.username === authStore.user?.username) {
-    router.push("/perfil");
+    router.push("/profile");
   } else {
-    router.push(`/perfil?user=${user.username}`);
+    router.push(`/profile?user=${user.username}`);
   }
 }
 </script>
