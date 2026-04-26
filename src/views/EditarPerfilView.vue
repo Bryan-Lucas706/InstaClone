@@ -1,5 +1,5 @@
 <script setup>
 </script>
 <template>
-  <div>Lista de Conexões — em breve</div>
+  <div>Editar Perfil — em breve</div>
 </template>

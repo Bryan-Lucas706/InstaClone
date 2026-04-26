@@ -19,23 +19,23 @@ const isActive = ref(false);
     </RouterLink>
 
     <!-- Buscar -->
-    <RouterLink to="/discover" class="navbar__item" aria-label="Buscar">
+    <RouterLink to="/descobrir" class="navbar__item" aria-label="Buscar">
       <i class="fa-solid fa-magnifying-glass"></i>
       <span class="navbar__label">Buscar</span>
     </RouterLink>
 
-    <!-- create -->
-    <RouterLink to="/create" class="navbar__item" aria-label="Criar post">
+    <!-- Criar -->
+    <RouterLink to="/criar" class="navbar__item" aria-label="Criar post">
       <i class="fa-solid fa-plus"></i>
       <span class="navbar__label">Criar</span>
     </RouterLink>
 
     <!-- Perfil -->
-    <RouterLink to="/profile" class="navbar__item" aria-label="Meu perfil">
+    <RouterLink to="/perfil" class="navbar__item" aria-label="Meu perfil">
       <div class="navbar__avatar">
         <Avatar
           :src="user?.avatar_url"
-          :alt="user?.username ?? 'profile'"
+          :alt="user?.username ?? 'perfil'"
           size="sm"
         />
       </div>
