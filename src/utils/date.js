@@ -1,11 +1,5 @@
-// ============================================================
-// INSTACLONE — Utilitário de datas
-// ============================================================
-
-/**
- * timeAgo() — converte uma data ISO em texto relativo legível.
- * Exemplos: "agora", "há 5 min", "há 3h", "há 2 dias"
- */
+ // timeAgo() — converte uma data ISO em texto relativo legível.
+ // Exemplos: "agora", "há 5 min", "há 3h", "há 2 dias"
 export function timeAgo(dateString) {
   const date = new Date(dateString)
   const now = new Date()

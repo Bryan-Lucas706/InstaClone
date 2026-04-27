@@ -2,12 +2,23 @@
 import { ref, computed } from "vue";
 import { useAuthStore } from "@/stores/auth.js";
 import Avatar from "@/components/ui/Avatar.vue";
+import ConfirmModal from "@/components/ui/ConfirmModal.vue";
+import router from "@/router";
 
 const authStore = useAuthStore();
 
 const user = computed(() => authStore.user);
+const showLogoutModal = ref(false);
 
-const isActive = ref(false);
+async function logout() {
+  try {
+    await authStore.logout();
+    showLogoutModal.value = false;
+    router.replace(`/login`)
+  } catch {
+    showLogoutModal.value = false;
+  } 
+}
 </script>
 
 <template>
@@ -41,7 +52,21 @@ const isActive = ref(false);
       </div>
       <span class="navbar__label">Perfil</span>
     </RouterLink>
+
+    <div class="navbar__item" @click="showLogoutModal = true">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i
+      ><span class="navbar__label">Sair</span>
+    </div>
   </nav>
+  <ConfirmModal
+    v-if="showLogoutModal"
+    title="Sair da conta"
+    message="Tem certeza que deseja sair da conta?"
+    confirm-label="Sair"
+    cancel-label="Cancelar"
+    @confirm="logout"
+    @cancel="showLogoutModal = false"
+  />
 </template>
 
 <style scoped>
@@ -68,6 +93,7 @@ const isActive = ref(false);
   display: flex;
   flex-direction: column;
   align-items: center;
+  cursor: pointer;
   gap: 3px;
   color: var(--color-text);
   border-radius: var(--radius-md);

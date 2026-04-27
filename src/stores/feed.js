@@ -5,19 +5,14 @@ import api from "@/services/api.js";
 export const useFeedStore = defineStore("feed", () => {
   // ─── Estado ───────────────────────────────────────────────
 
-  // Estrutura normalizada: dicionário { [id]: post }
-  // Escolhemos normalizar em vez de usar array porque:
-  // 1. Acesso por id é O(1) — essencial para toggleLike e addComment
-  // 2. Evita duplicatas ao fazer loadMore
-  // 3. Atualização otimista é mais simples (mutação direta no objeto)
+  // Estrutura normalizada:{ [id]: post }
   const postsById = ref({});
 
   // feedOrder guarda a sequência dos ids para renderização ordenada.
-  // Separar ordem dos dados é o padrão de normalização (Redux-style).
   const feedOrder = ref([]);
 
-  // cursor para paginação infinita — null significa sem mais páginas
-  const nextCursor = ref(null);
+  // cursor para paginação infinita
+  const nextCursor = ref(null); // null = sem paginas
 
   const isLoading = ref(false);
 
@@ -30,32 +25,27 @@ export const useFeedStore = defineStore("feed", () => {
 
   // feedPosts: array ordenado para o v-for do FeedView
   const feedPosts = computed(
-    () => feedOrder.value.map((id) => postsById.value[id]).filter(Boolean), // remove ids órfãos caso um post seja deletado
+    () => feedOrder.value.map((id) => postsById.value[id]).filter(Boolean), // remove ids de um post que foi deletado
   );
 
   // ─── Helpers privados ─────────────────────────────────────
 
   // Normaliza um array de posts recebido da API
-  // inserindo cada um no dicionário postsById.
   function _normalizePosts(posts) {
     posts.forEach((post) => {
-      // Normaliza campo do backend (isLiked ) para o padrão interno (isLiked)
-      post.isLiked = post.liked_by_me;
       postsById.value[post.id] = post;
+      post.isLiked = post.liked_by_me; // Normaliza internamente
     });
   }
 
   // ─── Ações públicas ───────────────────────────────────────
 
-  /**
-   * fetchFeed() — carrega a primeira página do feed.
-   * Reseta feedOrder para evitar duplicatas ao recarregar.
-   */
+  // fetchFeed() — carrega a primeira página do feed.
   async function fetchFeed() {
     isLoading.value = true;
     try {
       const { data } = await api.get("/feed");
-      // Reseta estado antes de popular — evita posts duplicados
+      // Reseta o estado para evitar posts duplicados ao recarregar.
       postsById.value = {};
       feedOrder.value = [];
 
@@ -71,11 +61,9 @@ export const useFeedStore = defineStore("feed", () => {
     }
   }
 
-  /**
-   * loadMoreFeed() — carrega a próxima página acumulando posts.
-   * Usa cursor em vez de page number para evitar posts duplicados
-   * quando novos itens são inseridos entre requisições.
-   */
+  // loadMoreFeed() — carrega a próxima página acumulando posts.
+  // Usa cursor em vez de page number para evitar posts duplicados
+  // quando novos itens são inseridos entre requisições.
   async function loadMoreFeed() {
     if (!nextCursor.value || isLoading.value) return;
 
@@ -98,22 +86,17 @@ export const useFeedStore = defineStore("feed", () => {
     }
   }
 
-  /**
-   * toggleLike() — curtir/descurtir com atualização otimista.
-   * "Otimista": atualiza a UI imediatamente sem esperar a API,
-   * revertendo apenas se a requisição falhar.
-   * Isso elimina o delay visual que prejudica a experiência.
-   */
+  // toggleLike() — curtir/descurtir com atualização otimista.
   async function toggleLike(postId) {
     const post = postsById.value[postId];
     if (!post) return;
 
     // Salva estado anterior para reverter em caso de erro
-    const wasLiked = post.isLiked;
+    const wasLiked = post.isLiked; // ex: false
     const previousCount = post.likes_count;
 
     // Atualização otimista imediata
-    post.isLiked = !wasLiked;
+    post.isLiked = !wasLiked; // ex: true
     post.likes_count = wasLiked ? previousCount - 1 : previousCount + 1;
 
     try {
@@ -135,7 +118,9 @@ export const useFeedStore = defineStore("feed", () => {
   // Insere o comentário retornado pela API diretamente no post
   async function addComment(postId, text) {
     try {
-      const { data } = await api.post(`/posts/${postId}/comments`, { body: text });
+      const { data } = await api.post(`/posts/${postId}/comments`, {
+        body: text,
+      });
       const post = postsById.value[postId];
       if (post) {
         if (!Array.isArray(post.comments)) post.comments = [];
@@ -150,19 +135,13 @@ export const useFeedStore = defineStore("feed", () => {
     }
   }
 
-  /**
-   * createPost() — envia novo post com FormData (multipart).
-   * FormData é necessário porque enviamos arquivo (imagem) +
-   * texto (caption) na mesma requisição.
-   * Insere o post no início do feed ao ter sucesso.
-   */
+  // Enviamos usando FormData,ele é necessário porque enviamos
+  // arquivo (imagem) + texto (caption) na mesma requisição.
   async function createPost(formData) {
     try {
       const { data } = await api.post("/posts", formData, {
-        // Sobrescreve o Content-Type padrão (application/json)
-        // para multipart/form-data — o browser define o boundary
-        // automaticamente quando passamos FormData com undefined
         headers: { "Content-Type": undefined },
+        // Sobrescreve o Content-Type padrão para multipart/form-data
       });
       postsById.value[data.id] = data;
       feedOrder.value.unshift(data.id);
@@ -172,10 +151,8 @@ export const useFeedStore = defineStore("feed", () => {
     }
   }
 
-  /**
-   * removePost() — remove post do estado local.
-   * Chamado após DELETE /posts/:id bem-sucedido na view.
-   */
+  // removePost() — remove post do estado local.
+  // Chamado após DELETE /posts/:id bem-sucedido na view.
   function removePost(postId) {
     delete postsById.value[postId];
     feedOrder.value = feedOrder.value.filter((id) => id !== postId);
