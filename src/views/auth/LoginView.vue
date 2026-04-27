@@ -37,7 +37,7 @@ async function handleLogin() {
 
 <template>
   <div>
-    <h2 class="text-center fw-semibold mb-4">Entrar</h2>
+    <h2 class="text-center fw-normal mb-4">Entrar no Instagram</h2>
 
     <form @submit.prevent="handleLogin" novalidate>
       <!-- Email -->
@@ -80,8 +80,8 @@ async function handleLogin() {
       <!-- Botão de submit -->
       <button
         type="submit"
-        class="btn w-100 d-flex align-items-center justify-content-center gap-2"
-        :disabled="isLoading"
+        class="w-100 text-center fs-5"
+        :disabled="isLoading || !password || !email"
       >
         <Spinner v-if="isLoading" size="sm" />
         <span>{{ isLoading ? "Entrando..." : "Entrar" }}</span>
@@ -89,23 +89,46 @@ async function handleLogin() {
     </form>
 
     <!-- Link para cadastro -->
-    <hr class="my-4" />
-    <p class="text-center mb-0">
-      Não tem uma conta?
-      <RouterLink to="/register" class="fw-semibold"> Cadastre-se </RouterLink>
-    </p>
+    <button class="create__accont w-100 text-center fs-5">
+      <RouterLink to="/register"
+        >Criar nova conta</RouterLink
+      >
+    </button>
   </div>
 </template>
 <style scoped>
 h2 {
   font-size: 1.3em;
+  justify-self: self-start;
+  font-weight: lighter;
 }
+
 button {
   background: var(--color-primary);
   color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px;
+  margin: 10px 0;
+  text-align: center;
+}
+
+button:disabled {
+  opacity: 0.3;
+}
+
+.create__accont {
+  background-color: transparent;
+  border: 1px solid var(--color-primary);
 }
 
 a {
   color: var(--color-primary);
+}
+
+input {
+  width: 100%;
+  padding: 20px;
+  border-radius: 18px;
 }
 </style>

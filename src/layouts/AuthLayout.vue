@@ -2,7 +2,15 @@
   <div class="auth-layout">
     <!-- Logo no topo -->
     <header class="auth-layout__header">
-      <h1 class="auth-layout__logo gradient-text">InstaClone</h1>
+      <h1 class="text-center fw-normal">
+        Veja momentos do dia a dia dos <br />
+        seus <span class="gradient-text">amigos próximos</span>.
+      </h1>
+      <img
+        src="https://static.cdninstagram.com/rsrc.php/yN/r/-erGonz07kB.webp"
+        alt=""
+        width="700"
+      />
     </header>
 
     <!-- Slot para LoginView ou CadastroView -->
@@ -17,32 +25,37 @@
 <style scoped>
 .auth-layout {
   min-height: 100vh;
+  width: 100vw;
   background: var(--color-bg);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
 }
 
 .auth-layout__header {
+  width: 55%;
   margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.auth-layout__logo {
-  font-size: 36px;
-  font-weight: 700;
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  letter-spacing: -1px;
+.auth-layout__main {
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  width: 45%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
 }
 
 .auth-layout__card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
   padding: 32px;
   width: 100%;
-  max-width: 400px;
+}
+
+.auth-layout__card input {
+  width: 100%;
 }
 
 /* Remove a borda no mobile para visual mais limpo */

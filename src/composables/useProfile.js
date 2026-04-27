@@ -55,7 +55,7 @@ export function useProfile() {
       posts.value = postsRes.data.data;
       followersCount.value = followersRes.data.meta.total;
       followingCount.value = followingRes.data.meta.total;
-
+      
       // Verifica estado de seguir apenas se for perfil alheio
       if (!isOwnProfile.value) {
         const { data: followData } = await api.get(
@@ -63,7 +63,8 @@ export function useProfile() {
         );
         isFollowing.value = followData.is_following;
       }
-    } catch {
+    } catch (error) {
+      console.log(error);
       errorMessage.value = "Erro ao carregar perfil.";
     } finally {
       isLoading.value = false;
