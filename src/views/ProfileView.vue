@@ -51,7 +51,7 @@ const {
     <template v-else-if="profile">
       <!-- ── Header do perfil ── -->
       <div class="d-flex align-items-start gap-4 mb-4">
-        <Avatar :src="profile.avatar_url" :alt="profile.username" size="lg" />
+        <Avatar :src="profile.avatar_url" :alt="profile.username" style="width: 200px; height: 200px;"/>
 
         <div class="flex-grow-1">
           <!-- Username + botões -->

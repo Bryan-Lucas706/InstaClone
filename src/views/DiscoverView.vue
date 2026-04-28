@@ -23,7 +23,6 @@ const searchQuery = ref("");
 const loadingFollow = ref({});
 
 // fetchUsers() — busca usuários sugeridos via GET /users/search.
-
 async function fetchUsers(page) {
   if (searchQuery.value.length === 1) return;
   if (page === 1) {
@@ -38,17 +37,16 @@ async function fetchUsers(page) {
       params: { q: searchQuery.value || "...", per_page: 10, page },
     });
 
-    
-    const filtered = data.data.filter((u) => u.id !== authStore.user?.id);
+    const filtered = data.data.filter((user) => user.id !== authStore.user?.id);
 
     // Busca estado de seguir para cada usuário em paralelo
     const withFollowState = await Promise.all(
-      filtered.map(async (u) => {
+      filtered.map(async (user) => {
         try {
-          const res = await api.get(`/users/${u.id}/is-following`);
-          return { ...u, isFollowing: res.data.is_following };
+          const res = await api.get(`/users/${user.id}/is-following`);
+          return { ...user, isFollowing: res.data.is_following };
         } catch {
-          return { ...u, isFollowing: false };
+          return { ...user, isFollowing: false };
         }
       }),
     );
@@ -70,7 +68,7 @@ async function fetchUsers(page) {
   }
 }
 
-// Atualização otimista: muda o estado antes da resposta da API.
+// Atualização otimista
 async function toggleFollow(user) {
   loadingFollow.value[user.id] = true;
 

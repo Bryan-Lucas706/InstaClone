@@ -30,22 +30,19 @@ export function useProfile() {
 
   // ── Ações ─────────────────────────────────────────────────
 
-  /**
-   * fetchAll() — carrega perfil, posts e estado de seguir em paralelo.
-   * Promise.all garante que todas as requisições saem juntas,
-   * reduzindo o tempo total de carregamento.
-   */
+  // fetchAll() — carrega perfil, posts e estado de seguir em paralelo.
+  // Promise.all garante que todas as requisições saem juntas,
+  // reduzindo o tempo total de carregamento.
+
   async function fetchAll(username) {
     if (!username) return;
     isLoading.value = true;
     errorMessage.value = "";
 
     try {
-      // Busca perfil primeiro para obter o id
       const { data: profileData } = await api.get(`/users/${username}`);
-      profile.value = profileData;
+      profile.value = profileData; // Pega o perfil pelo username
 
-      // Com o id em mãos, busca posts e contadores em paralelo
       const [postsRes, followersRes, followingRes] = await Promise.all([
         api.get(`/users/${profileData.id}/posts`),
         api.get(`/users/${profileData.id}/followers`),
@@ -55,8 +52,7 @@ export function useProfile() {
       posts.value = postsRes.data.data;
       followersCount.value = followersRes.data.meta.total;
       followingCount.value = followingRes.data.meta.total;
-      
-      // Verifica estado de seguir apenas se for perfil alheio
+
       if (!isOwnProfile.value) {
         const { data: followData } = await api.get(
           `/users/${profileData.id}/is-following`,
@@ -64,7 +60,6 @@ export function useProfile() {
         isFollowing.value = followData.is_following;
       }
     } catch (error) {
-      console.log(error);
       errorMessage.value = "Erro ao carregar perfil.";
     } finally {
       isLoading.value = false;
@@ -77,11 +72,8 @@ export function useProfile() {
     isLoadingFollow.value = true;
 
     const wasFollowing = isFollowing.value;
-    // Atualização otimista
     isFollowing.value = !wasFollowing;
-    followersCount.value = wasFollowing
-      ? followersCount.value - 1
-      : followersCount.value + 1;
+    followersCount.value = wasFollowing ? followersCount.value - 1 : followersCount.value + 1;
 
     try {
       if (wasFollowing) {
@@ -90,7 +82,6 @@ export function useProfile() {
         await api.post(`/users/${profile.value.id}/follow`);
       }
     } catch {
-      // Reverte em caso de erro
       isFollowing.value = wasFollowing;
       followersCount.value = wasFollowing
         ? followersCount.value + 1
