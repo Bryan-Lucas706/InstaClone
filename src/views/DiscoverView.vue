@@ -22,12 +22,8 @@ const searchQuery = ref("");
 // para o botão de seguir mostrar spinner separado por card
 const loadingFollow = ref({});
 
-/**
- * fetchUsers() — busca usuários sugeridos via GET /users/search.
- * O Swagger não tem rota /users/suggestions, então usamos
- * /users/search sem query para listar todos os usuários.
- * Reseta a lista se for página 1.
- */
+// fetchUsers() — busca usuários sugeridos via GET /users/search.
+
 async function fetchUsers(page) {
   if (searchQuery.value.length === 1) return;
   if (page === 1) {
@@ -42,6 +38,7 @@ async function fetchUsers(page) {
       params: { q: searchQuery.value || "...", per_page: 10, page },
     });
 
+    
     const filtered = data.data.filter((u) => u.id !== authStore.user?.id);
 
     // Busca estado de seguir para cada usuário em paralelo
@@ -106,11 +103,11 @@ function goToProfile(user) {
 
 <template>
   <div class="container py-4" style="max-width: 614px">
-    <h1 class="fw-semibold mb-4" style="font-size: 1.2em">Descobrir pessoas</h1>
+    <h1 class="fw-semibold mb-4 fs-5">Descobrir pessoas</h1>
     <input
       v-model="searchQuery"
       type="text"
-      class="form-control mb-3"
+      class="mb-3"
       placeholder="Buscar pessoas..."
       @input="fetchUsers(1)"
     />
@@ -119,40 +116,12 @@ function goToProfile(user) {
       <div
         v-for="n in users"
         :key="n"
-        class="d-flex align-items-center gap-3 p-3 mb-2 rounded"
-        style="
-          background: var(--color-surface);
-          border: 1px solid var(--color-border);
-        "
+        class="skeleton_user d-flex align-items-center gap-3 p-3 mb-2 rounded"
       >
-        <div
-          class="rounded-circle flex-shrink-0"
-          style="
-            width: 44px;
-            height: 44px;
-            background: var(--color-border);
-            animation: shimmer 1.2s infinite;
-          "
-        />
+        <div class="skeleton_avatar rounded-circle" />
         <div class="flex-grow-1 d-flex flex-column gap-2">
-          <div
-            class="rounded"
-            style="
-              height: 12px;
-              width: 40%;
-              background: var(--color-border);
-              animation: shimmer 1.2s infinite;
-            "
-          />
-          <div
-            class="rounded"
-            style="
-              height: 12px;
-              width: 25%;
-              background: var(--color-border);
-              animation: shimmer 1.2s infinite;
-            "
-          />
+          <div class="rounded skeleton_username" />
+          <div class="rounded skeleton_name" />
         </div>
       </div>
     </template>
@@ -162,12 +131,8 @@ function goToProfile(user) {
       <div
         v-for="user in users"
         :key="user.id"
-        class="d-flex align-items-center gap-3 p-3 mb-2 rounded"
-        style="
-          background: var(--color-surface);
-          border: 1px solid var(--color-border);
-          cursor: pointer;
-        "
+        class="user d-flex align-items-center gap-3 p-3 mb-2 rounded"
+        style=""
       >
         <!-- Avatar + info — clicável para o perfil -->
         <div
@@ -191,11 +156,7 @@ function goToProfile(user) {
         <!-- Botão seguir/seguindo -->
         <button
           class="btn btn-sm flex-shrink-0"
-          :style="
-            user.isFollowing
-              ? 'border: 1px solid var(--color-border); color: var(--color-text); min-width: 90px;'
-              : 'background: var(--color-primary); color: #fff; min-width: 90px;'
-          "
+          :class="user.isFollowing ? 'seguindo_btn' : 'seguir_btn'"
           :disabled="loadingFollow[user.id]"
           @click.stop="toggleFollow(user)"
         >
@@ -231,6 +192,59 @@ function goToProfile(user) {
 </template>
 
 <style scoped>
+input {
+  border-radius: 20px;
+  width: 100%;
+  padding: 8px;
+  outline: none;
+  border: 1px solid var(--color-text-muted);
+}
+
+input:focus {
+  border: 1px solid var(--color-primary);
+}
+
+.skeleton_user {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+.skeleton_avatar {
+  width: 44px;
+  height: 44px;
+  background: var(--color-border);
+  animation: shimmer 1.2s infinite;
+}
+.skeleton_username {
+  height: 12px;
+  width: 40%;
+  background: var(--color-border);
+  animation: shimmer 1.2s infinite;
+}
+.skeleton_name {
+  height: 12px;
+  width: 25%;
+  background: var(--color-border);
+  animation: shimmer 1.2s infinite;
+}
+
+.user {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.seguindo_btn {
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  min-width: 90px;
+}
+
+.seguir_btn {
+  background: var(--color-primary);
+  color: #fff;
+  min-width: 90px;
+}
+
 @keyframes shimmer {
   0% {
     opacity: 1;

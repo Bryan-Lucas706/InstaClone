@@ -15,17 +15,10 @@ const isLoading = ref(false);
 
 async function handleLogin() {
   // Validação client-side antes de qualquer requisição
-  if (!email.value || !password.value) {
-    errorMessage.value = "Preencha todos os campos.";
-    return;
-  }
-
   errorMessage.value = "";
   isLoading.value = true;
-
   try {
     await authStore.login(email.value, password.value);
-    // replace em vez de push para não deixar /login no histórico
     router.replace("/feed");
   } catch (error) {
     errorMessage.value = error.message;
@@ -37,35 +30,31 @@ async function handleLogin() {
 
 <template>
   <div>
-    <h2 class="text-center fw-normal mb-4">Entrar no Instagram</h2>
+    <h2 class="fw-normal fs-5 mb-4">Entrar no Instagram</h2>
 
     <form @submit.prevent="handleLogin" novalidate>
       <!-- Email -->
-      <div class="mb-3">
-        <label for="email" class="visually-hidden">E-mail</label>
+      <div class="field mb-3">
         <input
-          id="email"
           v-model="email"
           type="email"
-          class="form-control"
-          placeholder="E-mail"
+          placeholder=" "
           autocomplete="email"
           :disabled="isLoading"
         />
+        <label for="email">E-mail</label>
       </div>
 
       <!-- Senha -->
-      <div class="mb-3">
-        <label for="password" class="visually-hidden">Senha</label>
+      <div class="field mb-3">
         <input
-          id="password"
           v-model="password"
           type="password"
-          class="form-control"
-          placeholder="Senha"
+          placeholder=" "
           autocomplete="current-password"
           :disabled="isLoading"
         />
+        <label for="password">Senha</label>
       </div>
 
       <!-- Mensagem de erro -->
@@ -80,7 +69,7 @@ async function handleLogin() {
       <!-- Botão de submit -->
       <button
         type="submit"
-        class="w-100 text-center fs-5"
+        class="w-100 text-center fs-6"
         :disabled="isLoading || !password || !email"
       >
         <Spinner v-if="isLoading" size="sm" />
@@ -89,25 +78,19 @@ async function handleLogin() {
     </form>
 
     <!-- Link para cadastro -->
-    <button class="create__accont w-100 text-center fs-5">
-      <RouterLink to="/register"
-        >Criar nova conta</RouterLink
-      >
-    </button>
+    <RouterLink to="/register">
+      <button class="create__accont w-100 text-center fs-6">
+        Criar nova conta
+      </button>
+    </RouterLink>
   </div>
 </template>
 <style scoped>
-h2 {
-  font-size: 1.3em;
-  justify-self: self-start;
-  font-weight: lighter;
-}
-
 button {
   background: var(--color-primary);
   color: #fff;
   border: none;
-  border-radius: 20px;
+  border-radius: 15px;
   padding: 10px;
   margin: 10px 0;
   text-align: center;
@@ -115,20 +98,52 @@ button {
 
 button:disabled {
   opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .create__accont {
   background-color: transparent;
   border: 1px solid var(--color-primary);
+  color: var(--color-primary);
 }
 
 a {
   color: var(--color-primary);
 }
 
+.field {
+  position: relative;
+}
+
 input {
   width: 100%;
-  padding: 20px;
+  height: 60px;
+  padding-left: 15px;
   border-radius: 18px;
+  border: 1px solid var(--color-border);
+  outline: none;
+}
+
+input:focus,
+input:hover {
+  border: 1px solid var(--color-primary);
+}
+
+label {
+  color: var(--color-text-muted);
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  transition: all 0.2s ease;
+  font-size: 1.2em;
+  pointer-events: none;
+}
+
+input:focus ~ label,
+input:not(:placeholder-shown) ~ label {
+  top: 0.2em;
+  transform: none;
+  font-size: 1em;
 }
 </style>

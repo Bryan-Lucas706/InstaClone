@@ -14,10 +14,10 @@ async function logout() {
   try {
     await authStore.logout();
     showLogoutModal.value = false;
-    router.replace(`/login`)
+    router.replace(`/login`);
   } catch {
     showLogoutModal.value = false;
-  } 
+  }
 }
 </script>
 
@@ -50,10 +50,10 @@ async function logout() {
           size="sm"
         />
       </div>
-      <span class="navbar__label">Perfil</span>
+      <span class="navbar__label">{{ user.username }}</span>
     </RouterLink>
 
-    <div class="navbar__item" @click="showLogoutModal = true">
+    <div class="navbar__item sair" @click="showLogoutModal = true">
       <i class="fa-solid fa-arrow-right-from-bracket"></i
       ><span class="navbar__label">Sair</span>
     </div>
@@ -109,6 +109,10 @@ async function logout() {
   font-weight: 500;
 }
 
+.sair {
+  display: none;
+}
+
 /* ── Desktop: sidebar fixa na esquerda ── */
 @media (min-width: 768px) {
   .navbar {
@@ -122,34 +126,53 @@ async function logout() {
     flex-direction: column;
     justify-content: center;
     gap: 10px;
+    transition:
+      width 0.4s ease,
+      padding 0.4s ease;
   }
 
   .navbar__item {
     padding: 12px;
+    flex-direction: row;
+    gap: 0;
+    width: 100%;
+    overflow: hidden;
+    transition: gap 0.4s ease;
   }
 
   .navbar__label {
-    display: none;
+    display: block;
+    font-size: 14px;
+    font-weight: 400;
+    max-width: 0; /* ocupa zero espaço */
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      max-width 0.4s ease,
+      opacity 0.3s ease,
+      gap 0.4s ease;
   }
 
-  /* Em telas maiores, exibe label ao lado do ícone */
-  @media (min-width: 1024px) {
-    .navbar {
-      width: 220px;
-      align-items: flex-start;
-      padding: 20px 12px;
-    }
+  .sair {
+    color: #dd2736;
+    display: flex;
+    position: absolute;
+    bottom: 10px;
+    width: 90%;
+  }
 
-    .navbar__item {
-      flex-direction: row;
+  .navbar:hover {
+    width: 220px;
+    align-items: flex-start;
+    padding: 20px 12px;
+
+    & .navbar__item {
       gap: 12px;
-      width: 100%;
     }
 
-    .navbar__label {
-      display: block;
-      font-size: 14px;
-      font-weight: 400;
+    & .navbar__label {
+      max-width: 200px; /* espaço suficiente para o texto aparecer */
+      opacity: 1;
     }
   }
 }

@@ -27,9 +27,6 @@ const dimension = computed(() => sizeMap[props.size])
 <style scoped>
 .spinner {
   border: 2px solid var(--color-border);
-  /* currentColor herda a cor do texto do elemento pai,
-     permitindo que o spinner se adapte ao contexto
-     (ex: branco em botões azuis, cinza em fundos claros) */
   border-top-color: currentColor;
   border-radius: var(--radius-full);
   animation: spin 0.7s linear infinite;

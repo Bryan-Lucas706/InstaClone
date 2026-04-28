@@ -95,7 +95,7 @@ router.beforeEach((to, _from, next) => {
 
   const requiresAuth = to.matched.some((r) => r.meta.requiresAuth);
   const requiresGuest = to.matched.some((r) => r.meta.requiresGuest);
-
+  // to.matched é uma rota pai + filha que compartilham com o destino.
   if (requiresAuth && !authStore.isAuthenticated) {
     return next("/login");
   }

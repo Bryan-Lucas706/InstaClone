@@ -1,50 +1,34 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 const props = defineProps({
   src: {
     type: String,
-    default: '',
+    default: "",
   },
   alt: {
     type: String,
-    default: '',
+    default: "",
   },
   size: {
     type: String,
-    default: 'md',
-    validator: (v) => ['sm', 'md', 'lg'].includes(v),
+    default: "md",
+    validator: (v) => ["sm", "md", "lg"].includes(v),
   },
-})
+});
 
-const sizeMap = { sm: '28px', md: '38px', lg: '80px' }
-const dimension = computed(() => sizeMap[props.size])
+const sizeMap = { sm: "28px", md: "38px", lg: "80px" };
+const dimension = computed(() => sizeMap[props.size]);
 
 // Controla se a imagem falhou ao carregar
-const imgError = ref(false)
+const imgError = ref(false);
 
 function onError() {
-  imgError.value = true
+  imgError.value = true;
 }
 
 // Exibe a inicial do alt como fallback quando:
-const showFallback = computed(() => !props.src || imgError.value)
-
-// Pega a primeira letra do alt para o fallback
-const initial = computed(() =>
-  props.alt ? props.alt.charAt(0) : '?'
-)
-
-const fallbackColor = computed(() => {
-  const colors = [
-    '#e91e63', '#9c27b0', '#3f51b5', '#2196f3',
-    '#009688', '#4caf50', '#ff9800', '#795548',
-  ]
-  if (!props.alt) return colors[0]
-  const index = props.alt.charCodeAt(0) % colors.length
-  return colors[index]
-})
-
+const showFallback = computed(() => !props.src || imgError.value);
 </script>
 
 <template>
@@ -54,19 +38,10 @@ const fallbackColor = computed(() => {
     :aria-label="alt"
   >
     <!-- Imagem real -->
-    <img
-      v-if="!showFallback"
-      :src="src"
-      :alt="alt"
-      @error="onError"
-    />
+    <img v-if="!showFallback" :src="src" :alt="alt" @error="onError" />
     <!-- Fallback: círculo colorido com inicial -->
-    <div
-      v-else
-      class="avatar__fallback"
-      :style="{ backgroundColor: fallbackColor }"
-    >
-      {{ initial }}
+    <div v-else class="avatar__fallback">
+      <img src="@/assets/images/avatarDefault.jpg" alt="Foto de perfil Defalt" />
     </div>
   </div>
 </template>

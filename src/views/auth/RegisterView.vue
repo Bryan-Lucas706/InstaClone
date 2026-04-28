@@ -33,15 +33,7 @@ function validateForm() {
   Object.keys(errors.value).forEach((k) => (errors.value[k] = ""));
   let valid = true;
 
-  if (!name.value.trim()) {
-    errors.value.name = "Nome é obrigatório.";
-    valid = false;
-  }
-
-  if (!username.value.trim()) {
-    errors.value.username = "Nome de usuário é obrigatório.";
-    valid = false;
-  } else if (!usernameRegex.test(username.value)) {
+  if (!usernameRegex.test(username.value)) {
     errors.value.username = "Use apenas letras, números, pontos e underscores.";
     valid = false;
   } else if (username.value.length > 30) {
@@ -49,23 +41,12 @@ function validateForm() {
     valid = false;
   }
 
-  if (!email.value.trim()) {
-    errors.value.email = "E-mail é obrigatório.";
-    valid = false;
-  }
-
-  if (!password.value) {
-    errors.value.password = "Senha é obrigatória.";
-    valid = false;
-  } else if (password.value.length < 6) {
+  if (password.value.length < 6) {
     errors.value.password = "Mínimo de 6 caracteres.";
     valid = false;
   }
 
-  if (!passwordConfirmation.value) {
-    errors.value.passwordConfirmation = "Confirme sua senha.";
-    valid = false;
-  } else if (password.value !== passwordConfirmation.value) {
+  if (password.value !== passwordConfirmation.value) {
     errors.value.passwordConfirmation = "As senhas não coincidem.";
     valid = false;
   }
@@ -77,7 +58,6 @@ async function handleRegister() {
   if (!validateForm()) return;
 
   isLoading.value = true;
-
   try {
     await authStore.register(
       name.value,
@@ -110,97 +90,83 @@ async function handleRegister() {
 
 <template>
   <div>
-    <h2 class="text-center fw-semibold mb-4">
-      Criar conta
-    </h2>
+    <h2 class="text-center mb-4">Criar conta</h2>
 
     <form @submit.prevent="handleRegister" novalidate>
       <!-- Nome -->
-      <div class="mb-3">
-        <label for="name" class="visually-hidden">Nome completo</label>
+      <div class="mb-3 field">
         <input
-          id="name"
           v-model="name"
           type="text"
-          class="form-control"
           :class="{ 'is-invalid': errors.name }"
-          placeholder="Nome completo"
+          placeholder=" "
           :disabled="isLoading"
         />
+        <label for="name">Nome completo</label>
         <div v-if="errors.name" class="invalid-feedback">
           {{ errors.name }}
         </div>
       </div>
 
       <!-- Username -->
-      <div class="mb-3">
-        <label for="username" class="visually-hidden">Nome de usuário</label>
+      <div class="mb-3 field">
         <input
-          id="username"
           v-model="username"
           type="text"
-          class="form-control"
           :class="{ 'is-invalid': errors.username }"
-          placeholder="Nome de usuário"
+          placeholder=" "
           autocomplete="username"
           :disabled="isLoading"
         />
+        <label for="username">Nome de usuário</label>
         <div v-if="errors.username" class="invalid-feedback">
           {{ errors.username }}
         </div>
       </div>
 
       <!-- Email -->
-      <div class="mb-3">
-        <label for="email" class="visually-hidden">E-mail</label>
+      <div class="mb-3 field">
         <input
-          id="email"
           v-model="email"
           type="email"
-          class="form-control"
           :class="{ 'is-invalid': errors.email }"
-          placeholder="E-mail"
+          placeholder=" "
           autocomplete="email"
           :disabled="isLoading"
         />
+        <label for="email">E-mail</label>
         <div v-if="errors.email" class="invalid-feedback">
           {{ errors.email }}
         </div>
       </div>
 
       <!-- Senha -->
-      <div class="mb-3">
-        <label for="password" class="visually-hidden">Senha</label>
+      <div class="mb-3 field">
         <input
-          id="password"
           v-model="password"
           type="password"
-          class="form-control"
           :class="{ 'is-invalid': errors.password }"
-          placeholder="Senha"
+          placeholder=" "
           autocomplete="new-password"
           :disabled="isLoading"
         />
+        <label for="password">Senha</label>
         <div v-if="errors.password" class="invalid-feedback">
           {{ errors.password }}
         </div>
       </div>
 
       <!-- Confirmar senha -->
-      <div class="mb-3">
-        <label for="password-confirmation" class="visually-hidden">
-          Confirmar senha
-        </label>
+      <div class="mb-3 field">
         <input
-          id="password-confirmation"
           v-model="passwordConfirmation"
           type="password"
-          class="form-control"
           :class="{ 'is-invalid': errors.passwordConfirmation }"
-          placeholder="Confirmar senha"
+          placeholder=" "
           autocomplete="new-password"
           :disabled="isLoading"
         />
+        <label for="password-confirmation">Confirmar senha</label>
         <div v-if="errors.passwordConfirmation" class="invalid-feedback">
           {{ errors.passwordConfirmation }}
         </div>
@@ -218,8 +184,15 @@ async function handleRegister() {
       <!-- Botão submit -->
       <button
         type="submit"
-        class="btn w-100 d-flex align-items-center justify-content-center gap-2"
-        :disabled="isLoading"
+        class="w-100 text-center fs-6"
+        :disabled="
+          isLoading ||
+          !name ||
+          !username ||
+          !email ||
+          !password ||
+          !passwordConfirmation
+        "
       >
         <Spinner v-if="isLoading" size="sm" />
         <span>{{ isLoading ? "Criando conta..." : "Cadastrar" }}</span>
@@ -227,15 +200,13 @@ async function handleRegister() {
     </form>
 
     <!-- Link para login -->
-    <hr class="my-4" />
-    <p class="text-center mb-0">
-      Já tem uma conta?
-      <RouterLink to="/login" class="fw-semibold"> Entrar </RouterLink>
-    </p>
+    <RouterLink to="/login">
+      <button class="create__accont w-100 text-center fs-6">Entrar</button>
+    </RouterLink>
   </div>
 </template>
 <style scoped>
-h2{
+h2 {
   font-size: 1.3em;
 }
 button {
@@ -244,6 +215,63 @@ button {
 }
 
 a {
+  color: var(--color-primary);
+}
+
+.field {
+  position: relative;
+}
+
+input {
+  width: 100%;
+  height: 60px;
+  padding-left: 15px;
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  outline: none;
+}
+
+input:focus,
+input:hover {
+  border: 1px solid var(--color-primary);
+}
+
+label {
+  color: var(--color-text-muted);
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  transition: all 0.2s ease;
+  font-size: 1.2em;
+  pointer-events: none;
+}
+
+input:focus ~ label,
+input:not(:placeholder-shown) ~ label {
+  top: 0.2em;
+  transform: none;
+  font-size: 1em;
+}
+
+button {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px;
+  margin: 10px 0;
+  text-align: center;
+}
+
+button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.create__accont {
+  background-color: transparent;
+  border: 1px solid var(--color-primary);
   color: var(--color-primary);
 }
 </style>

@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { useFeedStore } from "@/stores/feed.js";
 import PostCard from "@/components/PostCard.vue";
 import Spinner from "@/components/ui/Spinner.vue";
+import FeedSuggestions from "@/components/FeedSuggestions.vue";
 
 const feedStore = useFeedStore();
 const isLoadingMore = ref(false);
@@ -28,75 +29,79 @@ async function loadMore() {
 </script>
 
 <template>
-  <div class="feed">
-    <!-- Skeleton loader — apenas no carregamento inicial -->
-    <template v-if="feedStore.isLoading && feedStore.feedPosts.length === 0">
-      <div v-for="n in 3" :key="n" class="skeleton-card">
-        <div class="d-flex align-items-center gap-2 p-3">
-          <div
-            class="skeleton rounded-circle"
-            style="width: 44px; height: 44px; flex-shrink: 0"
-          />
-          <div class="d-flex flex-column gap-2 flex-grow-1">
+  <div class="feed-layout">
+    <div class="feed-layout__main">
+      <!-- Skeleton loader — apenas no carregamento inicial -->
+      <template v-if="feedStore.isLoading && feedStore.feedPosts.length === 0">
+        <div v-for="n in 3" :key="n" class="skeleton-card">
+          <div class="d-flex align-items-center gap-2 p-3">
             <div
-              class="skeleton"
-              style="height: 12px; width: 40%; border-radius: 4px"
+              class="skeleton rounded-circle"
+              style="width: 44px; height: 44px; flex-shrink: 0"
             />
-            <div
-              class="skeleton"
-              style="height: 12px; width: 25%; border-radius: 4px"
-            />
+            <div class="d-flex flex-column gap-2 flex-grow-1">
+              <div
+                class="skeleton"
+                style="height: 12px; width: 40%; border-radius: 4px"
+              />
+              <div
+                class="skeleton"
+                style="height: 12px; width: 25%; border-radius: 4px"
+              />
+            </div>
           </div>
+          <div class="skeleton" style="width: 100%; aspect-ratio: 1/1" />
         </div>
-        <div class="skeleton" style="width: 100%; aspect-ratio: 1/1" />
-      </div>
-    </template>
-
-    <!-- Lista de posts -->
-    <template v-else-if="feedStore.feedPosts.length > 0">
-      <PostCard
-        v-for="post in feedStore.feedPosts"
-        :key="post.id"
-        :post="post"
-      />
-
-      <!-- Carregar mais -->
-      <div
-        v-if="feedStore.nextCursor"
-        class="d-flex justify-content-center py-4"
-      >
-        <button
-          class="btn"
-          style="color: var(--color-primary); font-weight: 600"
-          :disabled="isLoadingMore"
-          @click="loadMore"
+      </template>
+      <!-- Lista de posts -->
+      <template v-else-if="feedStore.feedPosts.length > 0">
+        <PostCard
+          v-for="post in feedStore.feedPosts"
+          :key="post.id"
+          :post="post"
+        />
+        <!-- Carregar mais -->
+        <div
+          v-if="feedStore.nextCursor"
+          class="d-flex justify-content-center py-4"
         >
-          <Spinner v-if="isLoadingMore" size="sm" class="me-2" />
-          {{ isLoadingMore ? "Carregando..." : "Carregar mais" }}
-        </button>
+          <button
+            class="btn"
+            style="color: var(--color-primary); font-weight: 600"
+            :disabled="isLoadingMore"
+            @click="loadMore"
+          >
+            <Spinner v-if="isLoadingMore" size="sm" class="me-2" />
+            {{ isLoadingMore ? "Carregando..." : "Carregar mais" }}
+          </button>
+        </div>
+      </template>
+      <!-- Feed vazio -->
+      <div v-else class="feed__empty">
+        <div class="feed__empty-icon">📸</div>
+        <h2 class="feed__empty-title">Ainda não há posts para exibir.</h2>
+        <RouterLink
+          to="/create"
+          class="btn mt-3"
+          style="background: var(--color-primary); color: #fff"
+        >
+          Criar o primeiro post
+        </RouterLink>
       </div>
-    </template>
-
-    <!-- Feed vazio -->
-    <div v-else class="feed__empty">
-      <div class="feed__empty-icon">📸</div>
-      <h2 class="feed__empty-title">Ainda não há posts para exibir.</h2>
-      <RouterLink
-        to="/create"
-        class="btn mt-3"
-        style="background: var(--color-primary); color: #fff"
-      >
-        Criar o primeiro post
-      </RouterLink>
+    </div>
+    <div class="feed-layout__aside">
+      <FeedSuggestions />
     </div>
   </div>
 </template>
 
 <style scoped>
-.feed {
-  max-width: 480px;
+.feed-layout {
+  display: flex;
+  gap: 80px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding-top: 24px;
+  padding: 24px 16px;
 }
 
 .feed__empty {
@@ -137,12 +142,31 @@ async function loadMore() {
   animation: shimmer 1.2s infinite;
 }
 
+.feed-layout__main {
+  margin: auto;
+}
+
+.feed-layout__aside {
+  display: none;
+}
+
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
   }
   100% {
     background-position: -200% 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .feed-layout__aside {
+    width: 293px;
+    display: block;
+  }
+
+  .feed-layout__main {
+    margin: 0;
   }
 }
 </style>

@@ -1,25 +1,25 @@
 <template>
-  <div class="auth-layout">
+  <main class="auth-layout">
     <!-- Logo no topo -->
-    <header class="auth-layout__header">
+    <div class="auth-layout__header">
       <h1 class="text-center fw-normal">
-        Veja momentos do dia a dia dos <br />
-        seus <span class="gradient-text">amigos próximos</span>.
+        Veja momentos do dia a dia dos seus
+        <span class="gradient-text">amigos próximos</span>.
       </h1>
       <img
         src="https://static.cdninstagram.com/rsrc.php/yN/r/-erGonz07kB.webp"
         alt=""
         width="700"
       />
-    </header>
+    </div>
 
     <!-- Slot para LoginView ou CadastroView -->
-    <main class="auth-layout__main">
+    <div class="auth-layout__form">
       <div class="auth-layout__card">
         <RouterView />
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 </template>
 
 <style scoped>
@@ -29,41 +29,40 @@
   background: var(--color-bg);
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
 .auth-layout__header {
-  width: 55%;
-  margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: none;
 }
 
-.auth-layout__main {
-  background: var(--color-surface);
-  border-left: 1px solid var(--color-border);
-  width: 45%;
+.auth-layout__form {
+  width: 80%;
   height: 100vh;
   display: flex;
   align-items: center;
+  margin: auto;
 }
 
 .auth-layout__card {
-  padding: 32px;
   width: 100%;
-}
-
-.auth-layout__card input {
-  width: 100%;
+  padding: 30px;
 }
 
 /* Remove a borda no mobile para visual mais limpo */
-@media (max-width: 480px) {
-  .auth-layout__card {
-    border: none;
-    padding: 24px 8px;
-    background: transparent;
+@media (min-width: 768px) {
+  .auth-layout__header {
+    display: none;
+    width: 57%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .auth-layout__form {
+    background: var(--color-surface);
+    border-left: 2px solid var(--color-border);
+    width: 43%;
+    height: 100vh;
   }
 }
 </style>

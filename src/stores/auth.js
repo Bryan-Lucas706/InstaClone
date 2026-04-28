@@ -47,10 +47,7 @@ export const useAuthStore = defineStore("auth", () => {
       _saveToken(data.access_token);
       user.value = data.user;
     } catch (error) {
-      throw new Error(
-        error.response?.data?.message ??
-          "Erro ao fazer login. Tente novamente.",
-      );
+      throw new Error("Erro ao fazer login. Tente novamente.");
     }
   }
 

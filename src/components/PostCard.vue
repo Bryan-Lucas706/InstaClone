@@ -153,6 +153,7 @@ async function handleComment() {
 }
 
 .post-card {
+  max-width: 500px;
   margin-bottom: 24px;
   overflow: hidden;
 }
