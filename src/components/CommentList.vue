@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { timeAgo } from '@/utils/date.js'
 import Avatar from '@/components/ui/Avatar.vue'
@@ -53,10 +53,10 @@ async function deleteComment(commentId) {
       />
 
       <div class="flex-grow-1">
-        <span class="fw-semibold me-1" style="font-size: 14px;">
+        <span class="fw-semibold me-1">
           {{ comment.user?.username }}
         </span>
-        <span style="font-size: 14px;">{{ comment.body }}</span>
+        <span>{{ comment.body }}</span>
         <div class="mt-1" style="font-size: 11px; color: var(--color-text-muted);">
           {{ timeAgo(comment.created_at) }}
         </div>
@@ -99,7 +99,7 @@ async function deleteComment(commentId) {
     <div
       v-if="comments.length === 0"
       class="px-3 py-2"
-      style="font-size: 14px; color: var(--color-text-muted);"
+      style="color: var(--color-text-muted);"
     >
       Nenhum comentário ainda. Seja o primeiro!
     </div>

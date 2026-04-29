@@ -144,16 +144,12 @@ async function handleComment() {
 </template>
 
 <style scoped>
-@media (min-width: 480px) {
-  .post-card {
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-  }
-}
-
 .post-card {
-  max-width: 500px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+
+  width: 430px;
   margin-bottom: 24px;
   overflow: hidden;
 }
@@ -186,6 +182,7 @@ async function handleComment() {
   width: 100%;
   object-fit: cover;
   display: block;
+  aspect-ratio: 3 / 4;
 }
 
 /* ── Actions ── */
@@ -245,15 +242,6 @@ async function handleComment() {
   margin-right: 4px;
 }
 
-.post-card__caption-toggle {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 14px;
-  color: var(--color-text-muted);
-  cursor: pointer;
-}
-
 /* ── Input de comentário inline ── */
 .post-card__comment-form {
   display: flex;
@@ -303,6 +291,18 @@ async function handleComment() {
   background-size: 200% 100%;
   animation: shimmer 1.2s infinite;
   border-radius: var(--radius-sm);
+}
+
+@media (max-width: 450px) {
+  .post-card {
+    width: 100%;
+    background: none;
+    border: none;
+  }
+
+  .post-card__comment-form {
+    display: none;
+  }
 }
 
 @keyframes shimmer {

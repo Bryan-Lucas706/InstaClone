@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import api from '@/services/api.js'
@@ -9,7 +9,6 @@ import Spinner from '@/components/ui/Spinner.vue'
 const router = useRouter()
 const authStore = useAuthStore()
 
-// ── Estado local ─────────────────────────────────────────
 const name = ref(authStore.user?.name ?? '')
 const username = ref(authStore.user?.username ?? '')
 const bio = ref(authStore.user?.bio ?? '')
@@ -28,13 +27,13 @@ const errors = ref({
 const usernameRegex = /^[A-Za-z0-9._]+$/
   
 function validateForm() {
-  Object.keys(errors.value).forEach((k) => (errors.value[k] = ''))
+  Object.keys(errors.value).forEach((key) => (errors.value[key] = ''))
   let valid = true
 
   if (!name.value.trim()) {
     errors.value.name = 'Nome é obrigatório.'
     valid = false
-  } else if (name.value.length > 255) {
+  } else if (name.value.length > 60) {
     errors.value.name = 'Máximo de 255 caracteres.'
     valid = false
   }
@@ -58,10 +57,6 @@ function validateForm() {
   return valid
 }
 
-/**
- * handleAvatarChange() — preview imediato ao selecionar avatar.
- * Valida tamanho máximo de 2MB antes de qualquer upload.
- */
 async function handleAvatarChange(event) {
   const file = event.target.files?.[0]
   if (!file) return
@@ -71,12 +66,10 @@ async function handleAvatarChange(event) {
     return
   }
 
-  // Preview imediato com blob URL
   if (avatarPreview.value) URL.revokeObjectURL(avatarPreview.value)
   avatarFile.value = file
   avatarPreview.value = URL.createObjectURL(file)
 
-  // Faz upload do avatar imediatamente ao selecionar
   isLoadingAvatar.value = true
   try {
     const formData = new FormData()
@@ -84,7 +77,6 @@ async function handleAvatarChange(event) {
     const { data } = await api.post('/users/me/avatar', formData, {
       headers: { 'Content-Type': undefined },
     })
-    // Atualiza store com novo avatar_url
     authStore.updateProfile(data)
   } catch {
     errors.value.general = 'Erro ao enviar avatar.'
@@ -152,7 +144,7 @@ onUnmounted(() => {
       </div>
 
       <div>
-        <p class="mb-0 fw-semibold" style="font-size: 14px;">
+        <p class="mb-0 fw-semibold">
           {{ authStore.user?.username }}
         </p>
         <button
@@ -179,16 +171,15 @@ onUnmounted(() => {
 
       <!-- Nome -->
       <div class="mb-3">
-        <label for="name" class="form-label fw-semibold" style="font-size: 14px;">
+        <label for="name" class="form-label fw-semibold">
           Nome
         </label>
         <input
-          id="name"
           v-model="name"
           type="text"
           class="form-control"
           :class="{ 'is-invalid': errors.name }"
-          maxlength="255"
+          maxlength="60"
           :disabled="isLoading"
         />
         <div v-if="errors.name" class="invalid-feedback">{{ errors.name }}</div>
@@ -196,11 +187,10 @@ onUnmounted(() => {
 
       <!-- Username -->
       <div class="mb-3">
-        <label for="username" class="form-label fw-semibold" style="font-size: 14px;">
+        <label for="username" class="form-label fw-semibold">
           Nome de usuário
         </label>
         <input
-          id="username"
           v-model="username"
           type="text"
           class="form-control"
@@ -213,15 +203,14 @@ onUnmounted(() => {
 
       <!-- Bio -->
       <div class="mb-3">
-        <label for="bio" class="form-label fw-semibold" style="font-size: 14px;">
+        <label for="bio" class="form-label fw-semibold">
           Bio
         </label>
         <textarea
-          id="bio"
           v-model="bio"
           class="form-control"
           :class="{ 'is-invalid': errors.bio }"
-          rows="3"
+          rows="4"
           maxlength="500"
           style="resize: none;"
           :disabled="isLoading"

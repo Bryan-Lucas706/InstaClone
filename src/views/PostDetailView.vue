@@ -17,7 +17,6 @@ const router = useRouter();
 const authStore = useAuthStore();
 const feedStore = useFeedStore();
 
-// ── Estado local ─────────────────────────────────────────
 const post = ref(null);
 const comments = ref([]);
 const isLoading = ref(false);
@@ -25,7 +24,6 @@ const isLiking = ref(false);
 const showDeleteModal = ref(false);
 const isDeletingPost = ref(false);
 
-// Paginação de comentários
 const commentsPage = ref(1);
 const hasMoreComments = ref(false);
 const isLoadingMoreComments = ref(false);
@@ -37,7 +35,6 @@ onMounted(async () => {
 async function fetchPost() {
   isLoading.value = true;
   try {
-    // Busca post e comentários em paralelo
     const [postRes, commentsRes] = await Promise.all([
       api.get(`/posts/${route.params.postId}`),
       api.get(`/posts/${route.params.postId}/comments`, {
@@ -47,7 +44,6 @@ async function fetchPost() {
 
     post.value = {
       ...postRes.data,
-      // Normaliza liked_by_me para liked_by_me — padrão interno
       liked_by_me: postRes.data.liked_by_me ?? false,
       likes_count: postRes.data.likes_count ?? 0,
     };
@@ -56,7 +52,6 @@ async function fetchPost() {
     hasMoreComments.value = !!commentsRes.data.next_page_url;
     commentsPage.value = 1;
   } catch {
-    // Post não encontrado — volta para o feed
     router.replace("/feed");
   } finally {
     isLoading.value = false;
@@ -83,7 +78,6 @@ async function handleLike() {
   isLiking.value = true;
 
   const wasLiked = post.value.liked_by_me;
-  // Atualização otimista
   post.value.liked_by_me = !wasLiked;
   post.value.likes_count = wasLiked
     ? post.value.likes_count - 1
@@ -98,7 +92,6 @@ async function handleLike() {
     // Sincroniza com o feed store se o post estiver lá
     feedStore.toggleLike(post.value.id);
   } catch {
-    // Reverte
     post.value.liked_by_me = wasLiked;
     post.value.likes_count = wasLiked
       ? post.value.likes_count + 1
@@ -113,7 +106,6 @@ async function handleCommentAdded(body) {
     const { data } = await api.post(`/posts/${route.params.postId}/comments`, {
       body,
     });
-    // Insere novo comentário no início da lista
     comments.value.unshift(data);
   } catch {
     // Silencioso — input permanece para reenvio
@@ -121,7 +113,7 @@ async function handleCommentAdded(body) {
 }
 
 function handleCommentDeleted(commentId) {
-  comments.value = comments.value.filter((c) => c.id !== commentId);
+  comments.value = comments.value.filter((comment) => comment.id !== commentId);
 }
 
 async function handleDeletePost() {
@@ -138,8 +130,6 @@ async function handleDeletePost() {
 }
 
 const isOwnPost = () => post.value?.user?.id === authStore.user?.id;
-
-console.log(showDeleteModal.value);
 </script>
 
 <template>
@@ -177,7 +167,6 @@ console.log(showDeleteModal.value);
           <RouterLink
             :to="`/profile?user=${post.user?.username}`"
             class="fw-semibold"
-            style="font-size: 14px"
           >
             {{ post.user?.username }}
           </RouterLink>
@@ -190,15 +179,7 @@ console.log(showDeleteModal.value);
             aria-label="Deletar post"
             @click="showDeleteModal = true"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              style="width: 20px; height: 20px"
-            >
-              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
-            </svg>
+            <i class="fa-solid fa-trash"></i>
           </button>
         </div>
 
@@ -207,50 +188,32 @@ console.log(showDeleteModal.value);
           :src="post.image_url"
           :alt="`Post de ${post.user?.username}`"
           class="w-100"
-          style="aspect-ratio: 1/1; object-fit: cover"
+          style="aspect-ratio: 3 / 4; object-fit: cover"
         />
 
         <!-- Actions -->
-        <div class="d-flex align-items-center gap-3 px-3 pt-2">
+        <div class="d-flex align-items-center gap-2 px-3 py-2">
           <button
-            class="btn p-0 like-btn"
+            class="like-btn fs-5"
             :aria-label="post.liked_by_me ? 'Descurtir' : 'Curtir'"
             @click="handleLike"
           >
-            <svg
+            <i
               v-if="post.liked_by_me"
-              viewBox="0 0 24 24"
-              fill="#ed4956"
-              style="width: 24px; height: 24px"
-            >
-              <path
-                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-              />
-            </svg>
-            <svg
-              v-else
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              style="width: 24px; height: 24px"
-            >
-              <path
-                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-              />
-            </svg>
+              class="fa-solid fa-heart"
+              style="color: #eb3443"
+            ></i>
+            <i v-else class="fa-regular fa-heart"></i>
           </button>
-          <span class="fw-semibold" style="font-size: 14px">
+          <span class="fw-semibold">
             {{ formatCount(post.likes_count) }} curtidas
           </span>
         </div>
 
         <!-- Legenda -->
         <div class="px-3 py-2" v-if="post.caption">
-          <span class="fw-semibold me-1" style="font-size: 14px">{{
-            post.user?.username
-          }}</span>
-          <span style="font-size: 14px">{{ post.caption }}</span>
+          <span class="fw-semibold me-1">{{ post.user?.username }}</span>
+          <span>{{ post.caption }}</span>
         </div>
 
         <!-- Data -->
@@ -259,7 +222,6 @@ console.log(showDeleteModal.value);
           style="
             font-size: 11px;
             color: var(--color-text-muted);
-            text-transform: uppercase;
           "
         >
           {{ timeAgo(post.created_at) }}
@@ -285,7 +247,12 @@ console.log(showDeleteModal.value);
           <img
             :src="post.image_url"
             :alt="`Post de ${post.user?.username}`"
-            style="width: 100%"
+            style="
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              aspect-ratio: 3 / 4;
+            "
           />
         </div>
 
@@ -334,17 +301,11 @@ console.log(showDeleteModal.value);
             class="p-3 flex-shrink-0"
             style="border-bottom: 1px solid var(--color-border)"
           >
-            <span class="fw-semibold me-1" style="font-size: 14px">{{
-              post.user?.username
-            }}</span>
-            <span style="font-size: 14px">{{ post.caption }}</span>
+            <span class="fw-semibold me-1">{{ post.user?.username }}</span>
+            <span>{{ post.caption }}</span>
             <time
               class="d-block mt-1"
-              style="
-                font-size: 11px;
-                color: var(--color-text-muted);
-                text-transform: uppercase;
-              "
+              style="font-size: 11px; color: var(--color-text-muted)"
             >
               {{ timeAgo(post.created_at) }}
             </time>
@@ -366,34 +327,18 @@ console.log(showDeleteModal.value);
             class="flex-shrink-0"
             style="border-top: 1px solid var(--color-border)"
           >
-            <div class="d-flex align-items-center gap-3 px-3 py-2">
+            <div class="d-flex gap-2 px-3 py-2">
               <button
-                class="btn p-0 like-btn"
+                class="like-btn fs-5"
                 :aria-label="post.liked_by_me ? 'Descurtir' : 'Curtir'"
                 @click="handleLike"
               >
-                <svg
+                <i
                   v-if="post.liked_by_me"
-                  viewBox="0 0 24 24"
-                  fill="#ed4956"
-                  style="width: 24px; height: 24px"
-                >
-                  <path
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                  />
-                </svg>
-                <svg
-                  v-else
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  style="width: 24px; height: 24px"
-                >
-                  <path
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                  />
-                </svg>
+                  class="fa-solid fa-heart"
+                  style="color: #eb3443"
+                ></i>
+                <i v-else class="fa-regular fa-heart"></i>
               </button>
               <span class="fw-semibold" style="font-size: 14px">
                 {{ formatCount(post.likes_count) }} curtidas
@@ -419,15 +364,20 @@ console.log(showDeleteModal.value);
 </template>
 
 <style scoped>
-.like-btn {
-  transition: transform var(--transition-fast);
-}
-
-.like-btn:active {
-  transform: scale(1.3);
-}
-
 /* Layout desktop: imagem à esquerda, painel à direita */
+.like-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.like-btn:hover {
+  transform: scale(1.1);
+}
 .desktop-layout {
   height: calc(95vh - var(--header-height));
   max-width: 935px;
@@ -445,7 +395,7 @@ console.log(showDeleteModal.value);
 }
 
 .desktop-layout__panel {
-  width: 340px;
+  width: 40%;
   flex-shrink: 0;
   border-left: 1px solid var(--color-border);
   background: var(--color-surface);

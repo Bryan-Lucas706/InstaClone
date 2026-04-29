@@ -50,7 +50,7 @@ export const useFeedStore = defineStore("feed", () => {
       feedOrder.value = [];
 
       _normalizePosts(data.data);
-      feedOrder.value = data.data.map((p) => p.id);
+      feedOrder.value = data.data.map((post) => post.id);
       nextCursor.value = data.next_cursor ?? null;
     } catch (error) {
       throw new Error(
@@ -75,7 +75,7 @@ export const useFeedStore = defineStore("feed", () => {
 
       // Acumula ids no final da ordem existente
       _normalizePosts(data.data);
-      feedOrder.value.push(...data.data.map((p) => p.id));
+      feedOrder.value.push(...data.data.map((post) => post.id));
       nextCursor.value = data.next_cursor ?? null;
     } catch (error) {
       throw new Error(
@@ -141,7 +141,8 @@ export const useFeedStore = defineStore("feed", () => {
     try {
       const { data } = await api.post("/posts", formData, {
         headers: { "Content-Type": undefined },
-        // Sobrescreve o Content-Type padrão para multipart/form-data
+        // boundary — um identificador único que separa os campos do formulário no corpo da requisição
+        // Sem o boundary, o servidor não consegue interpretar os campos.
       });
       postsById.value[data.id] = data;
       feedOrder.value.unshift(data.id);

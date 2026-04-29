@@ -37,9 +37,9 @@ import Navbar from '@/components/ui/Navbar.vue'
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .app-layout__main {
-    margin-left: 220px;
+    margin-left: 150px;
   }
 }
 </style>

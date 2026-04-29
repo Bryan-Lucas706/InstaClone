@@ -18,14 +18,12 @@ const currentPage = ref(1);
 const hasMore = ref(false);
 const loadingFollow = ref({});
 
-// ── Tipo da lista: seguidores ou seguindo ─────────────────
 const type = computed(() => route.params.type);
 
 const title = computed(() =>
   type.value === "followers" ? "Followers" : "Following",
 );
 
-// Username do perfil sendo visualizado
 const targetUsername = computed(
   () => route.query.user ?? authStore.user?.username,
 );
@@ -62,14 +60,12 @@ async function fetchList(userId, page) {
 
     // Busca estado de seguir para cada usuário
     const withFollowState = await Promise.all(
-      data.data
-        .filter((u) => u.id !== authStore.user?.id)
-        .map(async (u) => {
+      data.data .filter((user) => user.id !== authStore.user?.id) .map(async (user) => {
           try {
-            const res = await api.get(`/users/${u.id}/is-following`);
-            return { ...u, isFollowing: res.data.is_following };
+            const res = await api.get(`/users/${user.id}/is-following`);
+            return { ...user, isFollowing: res.data.is_following };
           } catch {
-            return { ...u, isFollowing: false };
+            return { ...user, isFollowing: false };
           }
         }),
     );
@@ -119,15 +115,7 @@ function goBack() {
         aria-label="Voltar"
         @click="goBack"
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          style="width: 24px; height: 24px"
-        >
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
+        <i class="fa-solid fa-arrow-left"></i>
       </button>
       <h1 class="mb-0 fw-semibold" style="font-size: 16px">{{ title }}</h1>
     </div>
@@ -202,11 +190,7 @@ function goBack() {
         <button
           v-if="user.id !== authStore.user?.id"
           class="btn btn-sm flex-shrink-0"
-          :style="
-            user.isFollowing
-              ? 'border: 1px solid var(--color-border); color: var(--color-text); min-width: 90px;'
-              : 'background: var(--color-primary); color: #fff; min-width: 90px;'
-          "
+          :class="user.isFollowing ? 'seguindo_btn' : 'seguir_btn'"
           :disabled="loadingFollow[user.id]"
           @click="toggleFollow(user)"
         >
@@ -232,12 +216,21 @@ function goBack() {
     <!-- Vazio -->
     <div v-else class="text-center py-5" style="color: var(--color-text-muted)">
       <p class="mb-0">
-        {{
-          type === "followers"
-            ? "Nenhum seguidor ainda."
-            : "Não está seguindo ninguém."
-        }}
+        {{ type === "followers" ? "Nenhum seguidor ainda." : "Não está seguindo ninguém."}}
       </p>
     </div>
   </div>
 </template>
+<style scoped>
+.seguindo_btn {
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  min-width: 90px;
+}
+
+.seguir_btn {
+  background: var(--color-primary);
+  color: #fff;
+  min-width: 90px;
+}
+</style>

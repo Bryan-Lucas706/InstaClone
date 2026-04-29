@@ -50,41 +50,20 @@ const {
     <!-- Perfil carregado -->
     <template v-else-if="profile">
       <!-- ── Header do perfil ── -->
-      <div class="d-flex align-items-start gap-4 mb-4">
-        <Avatar :src="profile.avatar_url" :alt="profile.username" style="width: 200px; height: 200px;"/>
+      <div class="d-flex align-items-center gap-4 mt-2 mb-4">
+        <Avatar
+          :src="profile.avatar_url"
+          :alt="profile.username"
+          style="width: 150px; height: 150px"
+        />
 
         <div class="flex-grow-1">
-          <!-- Username + botões -->
+          <!-- Username -->
           <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
-            <h1 class="mb-0 fw-semibold" style="font-size: 20px">
+            <h1 class="mb-0 fw-bold" style="font-size: 24px">
               {{ profile.username }}
             </h1>
 
-            <!-- Botão editar (perfil próprio) -->
-            <button
-              v-if="isOwnProfile"
-              class="btn btn-sm"
-              style="border: 1px solid var(--color-border); font-size: 14px"
-              @click="router.push('/profile/edit')"
-            >
-              Editar perfil
-            </button>
-
-            <!-- Botão seguir/seguindo (perfil alheio) -->
-            <button
-              v-else
-              class="btn btn-sm d-flex align-items-center gap-2"
-              :style="
-                isFollowing
-                  ? 'border: 1px solid var(--color-border); color: var(--color-text);'
-                  : 'background: var(--color-primary); color: #fff;'
-              "
-              :disabled="isLoadingFollow"
-              @click="toggleFollow"
-            >
-              <Spinner v-if="isLoadingFollow" size="sm" />
-              <span>{{ isFollowing ? "Seguindo" : "Seguir" }}</span>
-            </button>
             <!-- Nome -->
           </div>
           <p class="mb-0 fw-semibold" style="font-size: 14px">
@@ -102,7 +81,6 @@ const {
                   ? '/profile/list/followers'
                   : `/profile/list/followers?user=${targetUsername}`
               "
-              style="font-size: 14px; color: var(--color-text)"
             >
               <strong>{{ followersCount }}</strong> seguidores
             </RouterLink>
@@ -112,7 +90,6 @@ const {
                   ? '/profile/list/following'
                   : `/profile/list/following?user=${targetUsername}`
               "
-              style="font-size: 14px; color: var(--color-text)"
             >
               <strong>{{ followingCount }}</strong> seguindo
             </RouterLink>
@@ -128,7 +105,25 @@ const {
           </p>
         </div>
       </div>
+      <!-- Botão editar (perfil próprio) -->
+      <button
+        v-if="isOwnProfile"
+        class="editProfile fw-semibold"
+        @click="router.push('/profile/edit')"
+      >
+        Editar perfil
+      </button>
 
+      <!-- Botão seguir/seguindo (perfil alheio) -->
+      <button
+        v-else
+        :class="isFollowing ? 'seguindo_btn' : 'seguir_btn'"
+        :disabled="isLoadingFollow"
+        @click="toggleFollow"
+      >
+        <Spinner v-if="isLoadingFollow" size="sm" />
+        <span>{{ isFollowing ? "Seguindo" : "Seguir" }}</span>
+      </button>
       <!-- ── Grid de posts ── -->
       <hr class="mb-3" />
 
@@ -160,14 +155,37 @@ const {
 </template>
 
 <style scoped>
+.editProfile {
+  padding: 10px;
+  width: 30%;
+  border: none;
+  border-radius: 10px;
+}
+
+.seguindo_btn {
+  width: 60%;
+  padding: 10px;
+  border: none;
+  color: var(--color-text);
+  border-radius: 10px;
+}
+
+.seguir_btn {
+  width: 60%;
+  border: none;
+  padding: 10px;
+  background: var(--color-primary);
+  border-radius: 10px;
+  color: #fff;
+}
 .post-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 3px;
+  grid-auto-rows: 1fr;
+  gap: 5px;
 }
 
 .post-grid__item {
-  aspect-ratio: 1 / 1;
   overflow: hidden;
   cursor: pointer;
 }
@@ -176,6 +194,7 @@ const {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  aspect-ratio: 3 / 4;
   transition: opacity var(--transition-fast);
 }
 

@@ -7,18 +7,13 @@ import Spinner from "@/components/ui/Spinner.vue";
 const router = useRouter();
 const feedStore = useFeedStore();
 
-// ── Estados internos do fluxo ─────────────────────────────
-// 'select' → 'edit' → 'publishing'
 const step = ref("select");
 
-// ── Estado local ─────────────────────────────────────────
 const selectedFile = ref(null);
 const previewUrl = ref("");
 const caption = ref("");
 const errorMessage = ref("");
 const publishSuccess = ref(false);
-
-// ── Drag and drop ─────────────────────────────────────────
 const isDragging = ref(false);
 
 // ── Validações de arquivo ─────────────────────────────────
@@ -47,12 +42,6 @@ function validateFile(file) {
   return null;
 }
 
-/**
- * handleFileSelect() — chamado ao selecionar arquivo pelo input
- * ou pelo drag and drop.
- * Usa URL.createObjectURL em vez de FileReader porque é mais
- * performático — não precisa ler o arquivo inteiro para o preview.
- */
 function handleFileSelect(file) {
   errorMessage.value = "";
   const error = validateFile(file);
@@ -61,7 +50,6 @@ function handleFileSelect(file) {
     return;
   }
 
-  // Revoga/Quebra a URL do antido arquivo se existir
   if (previewUrl.value) {
     URL.revokeObjectURL(previewUrl.value);
   }
@@ -71,11 +59,6 @@ function handleFileSelect(file) {
   step.value = "edit";
 }
 
-/**
- * handlePublish() — monta o FormData e chama feedStore.createPost().
- * FormData é necessário para enviar arquivo + texto juntos
- * como multipart/form-data conforme exige o backend.
- */
 async function handlePublish() {
   if (!selectedFile.value) return;
 
@@ -89,15 +72,12 @@ async function handlePublish() {
 
     await feedStore.createPost(formData);
 
-    // Revoga o blob após upload bem-sucedido
     URL.revokeObjectURL(previewUrl.value);
     publishSuccess.value = true;
 
-    // Redireciona após 1.5s para o usuário ver o feedback
-    setTimeout(() => router.replace("/feed"), 1500);
+    setTimeout(() => router.replace("/feed"), 1000);
   } catch {
     errorMessage.value = "Erro ao publicar. Tente novamente.";
-    // Volta para edição preservando imagem e legenda
     step.value = "edit";
   }
 }
@@ -111,8 +91,6 @@ function goBack() {
   step.value = "select";
 }
 
-// Garante que o blob é revogado ao sair da view
-// mesmo que o usuário navegue sem publicar
 onUnmounted(() => {
   if (previewUrl.value) {
     URL.revokeObjectURL(previewUrl.value);
@@ -122,7 +100,7 @@ onUnmounted(() => {
 
 <template>
   <div class="container py-4" style="max-width: 614px">
-    <h1 class="fw-semibold mb-4" style="font-size: 16px">Criar post</h1>
+    <h1 class="fw-semibold mb-4" style="font-size: 1.2em">Criar post</h1>
 
     <!-- ── Estado 1: Seleção ── -->
     <div v-if="step === 'select'">
@@ -134,21 +112,16 @@ onUnmounted(() => {
         @drop.prevent="onDrop"
         @click="$refs.fileInput.click()"
       >
-        <!-- Ícone de upload -->
         <i class="fa-regular fa-copy" style="font-size: 4em"></i>
         <div class="text-center">
           <p class="mb-1 fw-semibold" style="font-size: 16px">
             Arraste ou clique para selecionar
           </p>
-          <p
-            class="mb-0"
-            style="font-size: 13px; color: var(--color-text-muted)"
-          >
+          <p style="font-size: 12px; color: var(--color-text-muted)">
             JPEG, PNG ou WebP • Máximo 5MB
           </p>
         </div>
 
-        <!-- Input oculto — acionado pelo clique na área -->
         <input
           ref="fileInput"
           type="file"
@@ -168,23 +141,19 @@ onUnmounted(() => {
     <!-- ── Estado 2: Edição ── -->
     <div v-else-if="step === 'edit'">
       <div class="row g-4">
-        <!-- Preview da imagem -->
         <div class="col-12 col-md-6">
           <img
             :src="previewUrl"
             alt="Preview do post"
             class="w-100 rounded"
-            style="object-fit: cover"
+            style="object-fit: cover; aspect-ratio: 3 / 4"
           />
         </div>
 
-        <!-- Formulário -->
         <div class="col-12 col-md-6 d-flex flex-column gap-3">
-          <!-- Legenda -->
           <div>
             <label for="caption" class="visually-hidden">Legenda</label>
             <textarea
-              id="caption"
               v-model="caption"
               class="form-control"
               placeholder="Escreva uma legenda..."

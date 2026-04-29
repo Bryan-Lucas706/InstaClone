@@ -17,20 +17,20 @@ onMounted(async () => {
   isLoading.value = true
   try {
     const { data } = await api.get('/users/suggestions')
-    const filtered = data.data.filter((u) => u.id !== authStore.user?.id)
+    const filtered = data.data.filter((user) => user.id !== authStore.user?.id)
 
     suggestions.value = await Promise.all(
-      filtered.slice(0, 5).map(async (u) => {
+      filtered.slice(0, 5).map(async (user) => {
         try {
-          const res = await api.get(`/users/${u.id}/is-following`)
-          return { ...u, isFollowing: res.data.is_following }
+          const res = await api.get(`/users/${user.id}/is-following`)
+          return { ...user, isFollowing: res.data.is_following }
         } catch {
-          return { ...u, isFollowing: false }
+          return { ...user, isFollowing: false }
         }
       })
     )
   } catch {
-    // Silencioso — sugestões não são críticas
+    // Naõ retorna erro
   } finally {
     isLoading.value = false
   }
@@ -67,7 +67,7 @@ function goToProfile(user) {
   <aside class="suggestions">
 
     <!-- Usuário logado -->
-    <div class="suggestions__me d-flex align-items-center gap-3 mb-4">
+    <RouterLink to="/profile" class="suggestions__me d-flex align-items-center gap-3 mb-4" >
       <Avatar
         :src="authStore.user?.avatar_url"
         :alt="authStore.user?.username"
@@ -81,7 +81,7 @@ function goToProfile(user) {
           {{ authStore.user?.name }}
         </p>
       </div>
-    </div>
+    </RouterLink>
 
     <!-- Header sugestões -->
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -129,6 +129,7 @@ function goToProfile(user) {
           class="suggestions__follow-btn"
           :disabled="loadingFollow[user.id]"
           @click="toggleFollow(user)"
+          :class="user.isFollowing ? 'seguindo' : 'seguir'"
         >
           <Spinner v-if="loadingFollow[user.id]" size="sm" />
           <span v-else>{{ user.isFollowing ? 'Seguindo' : 'Seguir' }}</span>
@@ -193,8 +194,12 @@ function goToProfile(user) {
   font-weight: 600;
   color: var(--color-primary);
   cursor: pointer;
-  flex-shrink: 0;
-  padding: 0;
+}
+
+.suggestions__follow-btn.seguindo{
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
 }
 
 .suggestions__follow-btn:disabled {
