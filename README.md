@@ -1,8 +1,11 @@
 InstaClone — Frontend (Vue 3)
 Sobre
-O InstaClone é uma rede social inspirada no Instagram, construída como projeto final da disciplina. Este repositório contém o frontend da aplicação: uma SPA em Vue 3 que consome uma API RESTful externa (o backend do projeto vive em ../backend).
+O InstaClone é uma rede social inspirada no Instagram, construída como projeto final da disciplina. Este repositório contém o frontend da aplicação: uma SPA em Vue 3 que consome a API RESTful Laravel localizada em `instaclone-backend/`.
 
-A aplicação está integrada à API: autenticação por JWT, feed paginado por cursor, upload multipart de imagens e gerenciamento de seguidores/curtidas/comentários vêm todos do servidor. O único estado persistido localmente é o token de acesso, guardado em localStorage sob a chave instaclone.token.
+A aplicação está integrada à API: autenticação por token Bearer do Laravel Sanctum, feed paginado por cursor, upload multipart de imagens e gerenciamento de seguidores/curtidas/comentários vêm todos do servidor. O único estado persistido localmente é o token de acesso, guardado em localStorage sob a chave `instaclone.token`.
+
+Créditos
+O backend localizado em `instaclone-backend/` foi desenvolvido pelo professor Victor Raphael. A API Laravel organiza os recursos de autenticação, perfis, publicações, feed, seguidores, curtidas e comentários, além de disponibilizar documentação OpenAPI. Agradeço ao professor pelo desenvolvimento e por compartilhar essa base, que tornou possível integrar a interface a uma API completa.
 
 Stack
 Vue 3 (^3.5) com <script setup>
@@ -27,13 +30,13 @@ npm run build
 
 npm run preview
 Variáveis de Ambiente
-Copie .env.example para .env e ajuste a URL da API se necessário:
+Copie `.env.example` para `.env` e ajuste a URL da API se necessário:
 
 VITE_API_URL=http://localhost:8000/api
-Quando a variável não é definida, o cliente HTTP em src/services/api.js usa http://localhost:8000/api como fallback.
+O backend em `instaclone-backend/` expõe a API em `http://localhost:8000/api` por padrão. Defina `VITE_API_URL` para essa URL ao rodar o frontend localmente; o cliente HTTP não define uma URL padrão quando a variável está ausente.
 
 Docker
-O projeto tem um build multi-stage (Dockerfile) que gera os assets com Node e serve o dist/ via Nginx. Para subir com Docker Compose:
+O projeto tem um build multi-stage (`Dockerfile`) que gera os assets com Node e serve o `dist/` via Nginx. O `compose.yaml` desta pasta sobe apenas o frontend. Para subir com Docker Compose:
 
 docker compose up --build
-O serviço fica exposto em http://localhost:3000 (compose.yaml). Passe VITE_API_URL para o build quando a API não estiver em localhost:8000.
+O frontend fica exposto em `http://localhost:3000` (`compose.yaml`). Inicie a API separadamente usando as instruções em `instaclone-backend/README.md`. Passe `VITE_API_URL` para o build quando a API não estiver em `http://localhost:8000`.
